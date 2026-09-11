@@ -74,9 +74,10 @@
   --shadow-lg:0 0 0 1px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--ground);color:var(--ink);
-  font-family:var(--font-sans);
-  font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-sans);
+  font-size:var(--fs-sm);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
 .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 /* ícones: sprite SVG inline no início do <body>, traço herdando a cor do texto */
 .sprite{position:absolute;width:0;height:0;overflow:hidden}
@@ -84,19 +85,40 @@ body{margin:0;background:var(--ground);color:var(--ink);
 .ico-sm{width:16px;height:16px}
 .sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;border:0;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:where(a,button,input,select,[tabindex]):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
-.app{display:grid;grid-template-columns:344px 1fr;height:100vh;height:100dvh;gap:1px;background:var(--line)}
-@media (max-width:880px){.app{grid-template-columns:1fr;grid-template-rows:auto 62vh;height:auto}}
+/* ---------------------------------------------------------------- casca
+   O mapa ocupa a janela inteira; painel e controles flutuam por cima. As
+   variáveis de layout moram aqui, não nos tokens: --ui-* descreve a área útil
+   do mapa (o que sobra fora do painel e das margens), e o JS só a mede. */
+.app{position:fixed;inset:0;overflow:hidden;
+  --gap:var(--sp-3); --panel-w:clamp(320px,28vw,360px); --alvo:var(--alvo-min);
+  --ui-t:var(--gap); --ui-r:var(--gap); --ui-b:var(--gap); --ui-l:calc(var(--panel-w) + 2*var(--gap))}
+@media (pointer:coarse){.app{--alvo:calc(var(--alvo-min) + var(--sp-2))}}
 
-.panel{background:var(--surface);overflow-y:auto;display:flex;flex-direction:column}
-.map-wrap{background:var(--map-bg);position:relative;overflow:hidden;min-height:420px}
-canvas{display:block;width:100%;height:100%;cursor:crosshair}
-canvas.marcando{cursor:cell}
-#cvHover{position:absolute;inset:0;pointer-events:none;cursor:inherit}
+.map-wrap{position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--map-bg)}
+#cv{display:block;width:100%;height:100%;cursor:crosshair}
+#cv.marcando{cursor:cell}
+#cvHover{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.map-ui{position:absolute;z-index:2;top:var(--ui-t);right:var(--ui-r);bottom:var(--ui-b);left:var(--ui-l);
+  display:flex;flex-direction:column;gap:var(--sp-2);pointer-events:none;container-type:inline-size}
 
-.head{padding:14px 20px 14px;border-bottom:1px solid var(--line-2)}
+/* ---------------------------------------------------------------- painel flutuante */
+.panel{position:absolute;z-index:10;top:var(--gap);left:var(--gap);width:var(--panel-w);
+  max-height:calc(100% - 2*var(--gap));overflow-y:auto;overscroll-behavior:contain;
+  display:flex;flex-direction:column;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.head{padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--line-2)}
 .head-top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-2)}
-.head-top .eyebrow{margin:0}
+.eyebrow,.block-title,.sug-grupo{font-family:var(--font-cond);font-size:var(--fs-2xs);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow{margin:0}
+h1{margin:0;font-size:var(--fs-lg);font-weight:600;letter-spacing:-.01em;line-height:var(--lh-tight)}
+.sub{margin:var(--sp-1) 0 0;font-size:var(--fs-xs);color:var(--ink-2);line-height:1.45}
+.block{padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--line-2)}
+.block-title{margin:0 0 var(--sp-2);display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2)}
+.block-title .aux{font-family:var(--font-sans);letter-spacing:0;text-transform:none;font-weight:400}
 
 /* controle segmentado sobre radios nativos: setas, um só ponto de Tab e o
    anúncio "1 de 3" vêm do próprio navegador, sem código de teclado */
@@ -111,195 +133,198 @@ canvas.marcando{cursor:cell}
 .seg input:focus-visible + .seg-opt{outline:2px solid var(--focus);outline-offset:1px}
 .seg.tema{flex:none;grid-auto-columns:30px}
 .seg.tema .seg-opt{padding:0}
-.eyebrow{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin:0 0 6px}
-h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.015em;line-height:1.2}
-.sub{margin:6px 0 0;font-size:12px;color:var(--ink-2)}
 
-.block{padding:14px 20px;border-bottom:1px solid var(--line-2)}
-.block:last-child{border-bottom:0}
-.block-title{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:500;
-  margin:0 0 9px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.block-title .aux{letter-spacing:0;text-transform:none;font-size:11px;color:var(--ink-3)}
-
-/* época (Censo 2022 / Projeção 2026) */
-#epoca{width:100%;font:inherit;font-size:12.5px;padding:7px 10px;border:1px solid var(--line);
-  border-radius:3px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-#epoca:focus-visible{outline:2px solid var(--focus);outline-offset:-1px}
-.epoca-nota{font-size:11px;color:var(--ink-3);margin:7px 0 0;line-height:1.4}
-
-/* busca */
-.busca{position:relative}
-.busca input{width:100%;font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);
-  border-radius:3px;background:var(--surface-2);color:var(--ink)}
-.busca input:focus{outline:2px solid var(--focus);outline-offset:-1px;background:var(--surface)}
-.busca input::placeholder{color:var(--ink-3)}
-.sugestoes{position:absolute;top:100%;left:0;right:0;z-index:20;background:var(--surface);
-  border:1px solid var(--line);border-radius:3px;margin-top:2px;max-height:250px;overflow-y:auto;
-  box-shadow:var(--shadow-lg)}
-.sugestoes:empty{display:none}
-.sug{padding:6px 10px;cursor:pointer;font-size:12.5px;display:flex;justify-content:space-between;gap:8px}
-.sug:hover,.sug.sel{background:var(--accent-soft)}
-.sug .uf{color:var(--ink-3);font-size:11px;flex:none}
-
-/* variáveis (botões dentro do menu suspenso .varctl-menu) + legenda */
-.var{appearance:none;border:0;background:var(--surface);color:var(--ink-2);text-align:left;
-  padding:7px 10px;font:inherit;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:9px}
-.var:hover{background:var(--surface-2);color:var(--ink)}
-.var[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);font-weight:500}
-.var:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
-.swatch{width:9px;height:9px;border-radius:1px;flex:none}
-.var.sem-cor{border-bottom:1px solid var(--line-2)}
-.var.sem-cor[aria-pressed="true"]{background:var(--surface-3);color:var(--ink)}
-.swatch-off{border:1.4px solid var(--ink-3);border-radius:50%;background:transparent!important;position:relative}
-.swatch-off::after{content:'';position:absolute;left:-1.4px;top:50%;width:11.8px;height:1.4px;
-  background:var(--ink-3);transform:rotate(45deg)}
-
-.legend{display:flex;flex-direction:column;gap:2px}
-.lg-row{display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:9px;padding:1px 0}
-.lg-chip{width:14px;height:14px;border-radius:2px}
-.lg-label{font-size:12px;color:var(--ink-2)}
-.lg-sub{color:var(--ink-3);font-size:10.5px}
-.lg-n{font-size:11px;color:var(--ink-3)}
-
-/* raio */
-.raio-top{display:flex;gap:6px;margin-bottom:10px}
-.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);
-  padding:6px 10px;font:inherit;font-size:12px;border-radius:3px;cursor:pointer;white-space:nowrap}
+/* ---------------------------------------------------------------- campos e botões */
+#epoca,.poi-drop select{width:100%;height:var(--alvo);font:inherit;font-size:var(--fs-sm);padding:0 var(--sp-3);
+  border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface-2);color:var(--ink);cursor:pointer}
+#epoca:hover,.poi-drop select:hover{border-color:var(--ink-3)}
+.poi-drop select:disabled{cursor:not-allowed;opacity:.55}
+.epoca-nota{font-size:var(--fs-2xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45}
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);
+  min-height:var(--alvo);padding:0 var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);
+  background:var(--surface);color:var(--ink-2);font:inherit;font-size:var(--fs-xs);font-weight:500;cursor:pointer;white-space:nowrap}
 .btn:hover{background:var(--surface-2);color:var(--ink)}
-.btn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
 .btn.ghost{border-color:transparent;color:var(--ink-3)}
-.btn.ghost:hover{border-color:var(--line)}
-.cidade-limpar{display:block;width:100%;margin-top:8px;font-size:11.5px;padding:6px 8px;text-align:left}
-.slider-row{display:flex;align-items:center;gap:10px}
-input[type=range]{flex:1;accent-color:var(--accent);height:18px}
-.raio-val{font-size:13px;font-weight:600;min-width:56px;text-align:right}
-.raio-hint{font-size:11.5px;color:var(--ink-3);margin:8px 0 0;line-height:1.45}
+.btn.ghost:hover{border-color:var(--line);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed;background:var(--surface);color:var(--ink-3)}
+.icon-btn{appearance:none;border:0;background:transparent;color:var(--ink-3);width:28px;height:28px;
+  display:grid;place-items:center;border-radius:var(--r-sm);cursor:pointer;flex:none}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink)}
 
-/* pois */
-.poi-drop select{width:100%;font:inherit;font-size:12.5px;padding:6px 10px;border:1px solid var(--line);
-  border-radius:3px;background:var(--surface-2);color:var(--ink);appearance:auto}
-.poi-drop select:focus{outline:2px solid var(--focus);outline-offset:-1px;background:var(--surface)}
-.poi-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+/* ---------------------------------------------------------------- raio */
+.raio-top{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.slider-row{display:flex;align-items:center;gap:var(--sp-3)}
+input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
+.raio-val{font-size:var(--fs-sm);font-weight:600;min-width:56px;text-align:right}
+.raio-hint{font-size:var(--fs-xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45}
+
+/* ---------------------------------------------------------------- estabelecimentos */
+.poi-chips{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-2)}
 .poi-chips:empty{margin-top:0}
-.poi-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 9px;font-size:11.5px;
-  background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:12px}
+.poi-chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 3px 0 var(--sp-3);font-size:var(--fs-xs);
+  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);color:var(--ink);border-radius:var(--r-pill)}
 .poi-chip svg{display:block;flex:none}
-.poi-chip .qtd{font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.poi-chip .qtd{font-size:var(--fs-2xs);color:var(--ink-3);font-variant-numeric:tabular-nums}
 .poi-chip .x{appearance:none;border:0;background:transparent;color:var(--ink-2);cursor:pointer;
-  padding:0;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;margin-left:2px}
-.poi-chip .x:hover{color:var(--ink)}
-.poi-status{font-size:11.5px;color:var(--ink-3);margin:8px 0 0;line-height:1.45;min-height:1em}
+  padding:0;width:22px;height:22px;display:grid;place-items:center;border-radius:50%}
+.poi-chip .x:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink)}
+.poi-status{font-size:var(--fs-xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45;min-height:1em}
 
-/* leitura */
-.readout-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:11px}
-.readout-scope{font-size:13px;font-weight:600}
-.readout-code{font-size:10.5px;color:var(--ink-3)}
-.epoca-badge{flex-basis:100%;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
-  color:var(--accent);background:var(--accent-soft);border-radius:2px;padding:2px 6px;width:fit-content}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
-.stat{display:flex;flex-direction:column;gap:0;min-width:0}
-.stat-k{font-size:10.5px;color:var(--ink-3)}
-.stat-v{font-size:15px;font-weight:500;letter-spacing:-.01em}
-.stat-v small{font-size:11px;color:var(--ink-3);font-weight:400;margin-left:2px}
-
-.bars{margin-top:13px}
-.donut-wrap{display:flex;align-items:center;gap:16px;margin-top:6px}
+/* ---------------------------------------------------------------- leitura */
+.readout-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-1) var(--sp-2);margin-bottom:var(--sp-3)}
+.readout-scope{font-family:var(--font-cond);font-size:var(--fs-lg);font-weight:600;line-height:var(--lh-tight)}
+.readout-code{font-size:var(--fs-2xs);color:var(--ink-3)}
+.recorte{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--sp-1)}
+.recorte:not(:has(> :not([hidden]))){display:none}
+.chip{display:inline-flex;align-items:center;gap:2px;height:26px;padding:0 2px 0 var(--sp-3);border-radius:var(--r-pill);
+  background:var(--accent-soft);color:var(--accent-ink);font-size:var(--fs-xs);font-weight:500}
+.chip-x{appearance:none;border:0;background:transparent;color:inherit;width:24px;height:24px;
+  display:grid;place-items:center;border-radius:50%;cursor:pointer}
+.chip-x:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.epoca-badge{display:inline-flex;align-items:center;height:26px;padding:0 var(--sp-2);border-radius:var(--r-pill);
+  font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--accent-ink);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3) var(--sp-4)}
+.stat{display:flex;flex-direction:column;min-width:0}
+.stat-k{font-size:var(--fs-2xs);color:var(--ink-3)}
+.stat-v{font-size:var(--fs-md);font-weight:500;letter-spacing:-.01em}
+.stat-v small{font-size:var(--fs-2xs);color:var(--ink-3);font-weight:400;margin-left:2px}
+.bars{margin-top:var(--sp-4)}
+.donut-wrap{display:flex;align-items:center;gap:var(--sp-4);margin-top:var(--sp-2)}
 .donut{flex:none}
 .donut-track{fill:none;stroke:var(--line-2);stroke-width:16}
 .donut circle{transition:stroke-dasharray .2s, stroke-dashoffset .2s}
 .donut-center{font-size:11px;fill:var(--ink-3);font-family:inherit}
-.bar-key{display:flex;flex-direction:column;flex-wrap:wrap;gap:5px 12px}
-.bk{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2)}
+.bar-key{display:flex;flex-direction:column;gap:5px}
+.bk{display:flex;align-items:center;gap:6px;font-size:var(--fs-2xs);color:var(--ink-2)}
 .bk i{width:8px;height:8px;border-radius:2px;display:block;flex:none}
-
-.foot{padding:12px 20px 18px}
-.foot-link{font-size:12px;color:var(--accent);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.foot{padding:var(--sp-3) var(--sp-5) var(--sp-4);margin-top:auto}
+.foot-link{font-size:var(--fs-xs);color:var(--accent);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:var(--sp-1)}
 .foot-link:hover{text-decoration:underline}
 
-/* página de fontes e metodologia, sobreposta ao app inteiro */
-.fontesPage{position:fixed;inset:0;z-index:50;background:var(--surface);overflow-y:auto}
-.fontesPage[hidden]{display:none!important}
-.fontesPage-inner{max-width:640px;margin:0 auto;padding:32px 24px 60px}
-.fontesPage-voltar{display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;font-size:13px;font-weight:500;
-  color:var(--accent);text-decoration:none}
-.fontesPage-voltar:hover{text-decoration:underline}
-.fontesPage h2{margin:0 0 18px;font-size:19px;font-weight:600;letter-spacing:-.01em}
-.fontesPage p{margin:0 0 14px;font-size:13px;color:var(--ink-2);line-height:1.65}
-.fontesPage b{color:var(--ink);font-weight:500}
+/* ---------------------------------------------------------------- barra do mapa */
+.toolbar{display:flex;align-items:flex-start;gap:var(--sp-2);pointer-events:none}
+.tb-sup{pointer-events:auto;height:var(--alvo);background:var(--surface);color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-md)}
+.pop{position:absolute;top:calc(100% + var(--sp-1));z-index:5;pointer-events:auto;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-lg);
+  max-height:min(360px,60dvh);overflow-y:auto;overscroll-behavior:contain}
 
-.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);
-  border-radius:4px;padding:7px 9px;font-size:11.5px;box-shadow:var(--shadow-md);
-  opacity:0;transition:opacity .1s;max-width:230px;z-index:5}
-.tip.on{opacity:1}
-.tip .t-v{font-weight:600;font-size:13px;display:block}
-.tip .t-k{color:var(--ink-3);font-size:10.5px}
-
-.mapctl{position:absolute;top:12px;right:12px;display:flex;gap:1px;background:var(--line);
-  border:1px solid var(--line);border-radius:3px;overflow:hidden}
-.mapctl button{appearance:none;border:0;background:var(--surface);color:var(--ink-2);
-  width:32px;height:32px;font:inherit;font-size:14px;cursor:pointer;line-height:1;display:grid;place-items:center}
-.mapctl button:hover{background:var(--surface-2);color:var(--ink)}
-.mapctl button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink)}
-.mapctl button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
-.mapctl button.wide{width:auto;padding:0 10px;font-size:12px;display:flex;align-items:center;gap:6px}
-.attrib{position:absolute;right:12px;bottom:12px;font-size:9.5px;color:var(--ink-3);
-  background:var(--surface);border:1px solid var(--line-2);padding:2px 6px;border-radius:3px;opacity:.92}
-
-/* variável do mapa, em menu suspenso sobre o mapa, canto superior esquerdo */
-.varctl{position:absolute;top:12px;left:12px;z-index:7}
-.varctl-btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);
-  font:inherit;font-size:12.5px;padding:7px 10px;border-radius:4px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md);max-width:220px}
+.varctl{position:relative;flex:none}
+.varctl-btn{appearance:none;font:inherit;font-size:var(--fs-sm);font-weight:500;display:flex;align-items:center;
+  gap:var(--sp-2);padding:0 var(--sp-2) 0 var(--sp-3);cursor:pointer;max-width:clamp(150px,30cqi,270px)}
 .varctl-btn:hover{background:var(--surface-2)}
-.varctl-btn:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .varctl-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.varctl-chev{color:var(--ink-3);font-size:10px;flex:none}
-.varctl-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:230px;background:var(--surface);
-  border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow-lg);
-  display:flex;flex-direction:column;gap:1px;padding:2px;overflow:hidden}
-.varctl-menu[hidden]{display:none!important}
-.varctl-menu .var{border-radius:2px}
+.varctl-chev{color:var(--ink-3)}
+.varctl-menu{left:0;min-width:260px;padding:var(--sp-1);display:flex;flex-direction:column;gap:2px}
+.var{appearance:none;border:0;background:transparent;color:var(--ink-2);text-align:left;width:100%;
+  min-height:var(--alvo);padding:0 var(--sp-3);font:inherit;font-size:var(--fs-sm);cursor:pointer;
+  display:flex;align-items:center;gap:var(--sp-2);border-radius:var(--r-sm)}
+.var:hover{background:var(--surface-2);color:var(--ink)}
+.var[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.swatch{width:10px;height:10px;border-radius:3px;flex:none}
+.var.sem-cor{margin-bottom:2px;box-shadow:0 1px 0 var(--line-2)}
+.var.sem-cor[aria-pressed="true"]{background:var(--surface-3)}
+.swatch-off{border:1.5px solid var(--ink-3);border-radius:50%;background:transparent!important;position:relative}
+.swatch-off::after{content:'';position:absolute;left:-1.5px;top:50%;width:12px;height:1.5px;background:var(--ink-3);transform:rotate(45deg)}
 
-/* legenda de estabelecimentos, sobre o mapa, canto superior direito */
-.poiLeg{position:absolute;top:54px;right:12px;background:var(--surface);border:1px solid var(--line);
-  border-radius:4px;box-shadow:var(--shadow-md);padding:8px 10px;
-  display:flex;flex-direction:column;gap:5px;font-size:11.5px;z-index:6;max-width:190px}
-.poiLeg[hidden]{display:none!important}
-.pl-row{display:flex;align-items:center;gap:7px;color:var(--ink-2)}
+.busca{position:relative;flex:1 1 220px;max-width:520px;min-width:0;display:flex;align-items:center}
+.busca:focus-within{border-color:var(--accent)}
+.busca-ico{position:absolute;left:var(--sp-3);color:var(--ink-3);pointer-events:none}
+.busca input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--ink);font:inherit;
+  font-size:var(--fs-sm);padding:0 36px 0 36px;border-radius:inherit}
+.busca input::placeholder{color:var(--ink-3)}
+.busca input:focus-visible{outline:none}
+.busca-limpar{position:absolute;right:var(--sp-1)}
+.sugestoes{left:0;right:0;padding:var(--sp-1)}
+.sug-grupo{padding:var(--sp-2) var(--sp-2) var(--sp-1)}
+.sug{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-height:var(--alvo);
+  padding:0 var(--sp-2);border-radius:var(--r-sm);cursor:pointer;font-size:var(--fs-sm)}
+.sug:hover,.sug[aria-selected="true"]{background:var(--accent-soft)}
+.sug .uf{font-size:var(--fs-2xs);color:var(--ink-3);flex:none}
+.sug-end{justify-content:flex-start;color:var(--ink-2)}
+.sug-end .ico{color:var(--accent)}
+.busca-status{position:absolute;top:calc(100% + var(--sp-1));left:0;right:0;margin:0;padding:var(--sp-2) var(--sp-3);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-md);
+  font-size:var(--fs-xs);color:var(--ink-2);line-height:1.45;pointer-events:auto}
+.busca-status.erro{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+
+.tb-grupo{margin-left:auto;display:flex;overflow:hidden;flex:none}
+.tb-grupo button{appearance:none;border:0;background:transparent;color:var(--ink-2);width:var(--alvo);height:100%;
+  display:grid;place-items:center;cursor:pointer}
+.tb-grupo button + button{border-left:1px solid var(--line-2)}
+.tb-grupo button:hover{background:var(--surface-2);color:var(--ink)}
+.tb-grupo button:focus-visible{outline-offset:-2px}
+.tb-grupo button:disabled{color:var(--ink-3);opacity:.5;cursor:not-allowed;background:transparent}
+.tb-btn{appearance:none;flex:none;font:inherit;font-size:var(--fs-xs);font-weight:500;display:flex;align-items:center;
+  gap:6px;padding:0 var(--sp-3);cursor:pointer;color:var(--ink-2)}
+.tb-btn:hover{background:var(--surface-2);color:var(--ink)}
+.tb-btn[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);
+  border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+@container (max-width:560px){
+  /* barra estreita: a busca ganha a linha de cima inteira */
+  .toolbar{flex-wrap:wrap}
+  .busca{order:-1;flex-basis:100%;max-width:none}
+  .tb-rot{display:none}
+  .varctl-btn{max-width:170px}
+  .legenda-card{max-height:30dvh}
+}
+
+/* ---------------------------------------------------------------- rodapé do mapa: legenda + créditos */
+.map-rodape{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-2);pointer-events:none}
+.legenda-card{pointer-events:auto;width:min(340px,100%);max-height:55dvh;overflow:auto;padding:var(--sp-3) var(--sp-4);
+  display:flex;flex-direction:column;gap:var(--sp-3);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-md)}
+.app.bloqueado .legenda-card,.app.bloqueado .hint{display:none}
+.lg-titulo{margin:0 0 var(--sp-2);font-size:var(--fs-sm);font-weight:600}
+.legend{display:flex;flex-direction:column;gap:2px}
+.lg-row{display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:var(--sp-2);padding:2px 0}
+.lg-chip{width:14px;height:14px;border-radius:4px}
+.lg-label{font-size:var(--fs-xs);color:var(--ink-2)}
+.lg-sub{color:var(--ink-3);font-size:var(--fs-2xs)}
+.lg-n{font-size:var(--fs-2xs);color:var(--ink-3)}
+#poiLeg{display:flex;flex-direction:column;gap:var(--sp-1);padding-top:var(--sp-3);border-top:1px solid var(--line-2)}
+.pl-row{display:flex;align-items:center;gap:var(--sp-2);color:var(--ink-2);font-size:var(--fs-xs)}
 .pl-row svg{display:block;flex:none}
-.pl-row .qtd{margin-left:auto;color:var(--ink-3);font-size:10.5px;font-variant-numeric:tabular-nums}
-.hint{position:absolute;left:12px;bottom:12px;font-size:10.5px;color:var(--ink-3);
-  background:var(--surface);border:1px solid var(--line-2);padding:3px 7px;border-radius:3px}
-.carregando{position:absolute;top:12px;left:12px;font-size:11px;color:var(--ink-2);
-  background:var(--surface);border:1px solid var(--line);padding:4px 9px;border-radius:3px}
+.pl-row .qtd{margin-left:auto;color:var(--ink-3);font-size:var(--fs-2xs);font-variant-numeric:tabular-nums}
+.map-rodape-dir{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1)}
+.hint,.attrib{pointer-events:auto;font-size:var(--fs-2xs);color:var(--ink-3);border:1px solid var(--line-2);
+  background:color-mix(in srgb,var(--surface) 90%,transparent);padding:2px var(--sp-2);border-radius:var(--r-sm)}
 
-/* caixa de endereço sobre o mapa, canto superior central */
-.endereco{position:absolute;top:12px;left:50%;transform:translateX(-50%);
-  display:flex;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:4px;
-  box-shadow:var(--shadow-md);z-index:6;width:min(460px,calc(100% - 96px))}
-.endereco input{flex:1;min-width:0;font:inherit;font-size:12.5px;padding:7px 12px;border:0;
-  background:transparent;color:var(--ink);border-radius:4px 0 0 4px}
-.endereco input:focus{outline:2px solid var(--focus);outline-offset:-2px}
-.endereco input::placeholder{color:var(--ink-3)}
-.endereco button{appearance:none;border:0;border-left:1px solid var(--line);
-  background:var(--surface-2);color:var(--ink-2);font:inherit;font-size:12px;padding:0 12px;
-  cursor:pointer;border-radius:0 4px 4px 0}
-.endereco button:hover{background:var(--accent-soft);color:var(--ink)}
-.endereco button:disabled{opacity:.55;cursor:progress}
-.end-status{position:absolute;top:100%;left:0;right:0;margin-top:4px;font-size:11px;
-  color:var(--ink-2);background:var(--surface);border:1px solid var(--line-2);
-  padding:5px 9px;border-radius:3px;display:none}
-.end-status.on{display:block}
-.end-status.erro{color:var(--danger);border-color:var(--danger)}
+/* ---------------------------------------------------------------- tooltip */
+.tip{position:absolute;z-index:3;pointer-events:none;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-xs);box-shadow:var(--shadow-md);
+  opacity:0;transition:opacity .1s;max-width:240px}
+.tip.on{opacity:1}
+.tip .t-v{font-weight:600;font-size:var(--fs-sm);display:block}
+.tip .t-k{color:var(--ink-3);font-size:var(--fs-2xs)}
 
-/* bloqueio do mapa até a cidade ser escolhida */
-.bloqueio[hidden]{display:none!important}
-.bloqueio{position:absolute;inset:0;background:var(--scrim);backdrop-filter:blur(3px);
-  z-index:8;display:flex;align-items:center;justify-content:center;padding:24px}
-.bloqueio-inner{max-width:420px;text-align:center}
-.bloqueio-t{font-size:16px;font-weight:600;margin:0 0 8px;color:var(--ink)}
-.bloqueio-s{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
+/* ---------------------------------------------------------------- bloqueio até escolher cidade ou endereço
+   Cobre o mapa inteiro, mas fica abaixo da barra: a busca continua clicável. */
+.bloqueio{position:absolute;inset:0;z-index:1;background:var(--scrim);backdrop-filter:blur(3px)}
+.bloqueio-inner{position:absolute;top:calc(var(--ui-t) + var(--alvo));right:var(--ui-r);bottom:var(--ui-b);left:var(--ui-l);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);padding:var(--sp-6);text-align:center}
+.bloqueio-ico{width:36px;height:36px;color:var(--accent);stroke-width:1.25;margin-bottom:var(--sp-1)}
+.bloqueio-t{margin:0;font-family:var(--font-cond);font-size:var(--fs-xl);font-weight:600;color:var(--ink)}
+.bloqueio-s{margin:0;max-width:380px;font-size:var(--fs-sm);color:var(--ink-2);line-height:1.5}
+
+/* ---------------------------------------------------------------- página de fontes, sobreposta ao app */
+.fontesPage{position:fixed;inset:0;z-index:50;background:var(--surface);overflow-y:auto}
+.fontesPage-inner{max-width:680px;margin:0 auto;padding:var(--sp-8) var(--sp-6) 60px}
+.fontesPage-voltar{display:inline-flex;align-items:center;gap:6px;margin-bottom:var(--sp-5);font-size:var(--fs-sm);
+  font-weight:500;color:var(--accent);text-decoration:none}
+.fontesPage-voltar:hover{text-decoration:underline}
+.fontesPage h2{margin:0 0 var(--sp-5);font-family:var(--font-cond);font-size:var(--fs-2xl);font-weight:600;letter-spacing:-.01em;line-height:var(--lh-tight)}
+.fontesPage p{margin:0 0 var(--sp-4);font-size:var(--fs-md);color:var(--ink-2);line-height:var(--lh-relaxed)}
+.fontesPage b{color:var(--ink);font-weight:600}
+
+/* ---------------------------------------------------------------- telas estreitas (provisório: o bottom sheet vem na fase D) */
+@media (max-width:880px){
+  .app{--gap:var(--sp-2);--panel-h:46dvh;--ui-l:var(--gap);--ui-b:calc(var(--panel-h) + var(--gap))}
+  .panel{top:auto;left:0;right:0;bottom:0;width:auto;max-height:var(--panel-h);
+    border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom:0}
+}
 
 /* troca de tema: as cores do painel deslizam ~200ms. Nada anima no load (a
    classe só existe durante a troca) e o canvas troca na hora. */
@@ -330,8 +355,8 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
   <symbol id="i-seta-dir" viewBox="0 0 20 20"><path d="M4 10h11.5M11 5.5l4.5 4.5-4.5 4.5"/></symbol>
 </svg><!-- /sprite -->
 
-<div class="app">
-  <aside class="panel">
+<div class="app bloqueado" id="app">
+  <aside class="panel" id="panel" aria-label="Painel de dados">
     <div class="head">
       <div class="head-top">
         <p class="eyebrow">Censo 2022 · IBGE</p>
@@ -348,12 +373,12 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
         </script>
       </div>
       <h1>Malha Censitária · Região Sul</h1>
-      <p class="sub">65.170 setores censitários. Busque a cidade, passe o cursor sobre um setor ou marque um ponto para analisar um raio.</p>
+      <p class="sub">65.170 setores censitários. Busque uma cidade ou endereço no topo do mapa, passe o cursor sobre um setor ou marque um ponto para analisar um raio.</p>
     </div>
 
     <div class="block">
       <p class="block-title">Base de dados</p>
-      <select id="epoca" aria-label="Vintage dos dados">
+      <select id="epoca" aria-label="Base de dados">
         <option value="censo">Censo 2022 (oficial)</option>
         <option value="proj2026">Projeção 2026 (estimativa)</option>
       </select>
@@ -361,28 +386,16 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
     </div>
 
     <div class="block">
-      <p class="block-title">Ir para a cidade</p>
-      <div class="busca">
-        <input id="busca" type="search" placeholder="Digite o nome do município" autocomplete="off"
-               role="combobox" aria-expanded="false" aria-controls="sugestoes">
-        <div class="sugestoes" id="sugestoes" role="listbox"></div>
-      </div>
-      <button class="btn ghost cidade-limpar" id="btnLimparCidade" type="button" hidden>
-        Ver a base inteira (tirar filtro de cidade)
-      </button>
-    </div>
-
-    <div class="block">
       <p class="block-title">Raio de análise</p>
       <div class="raio-top">
-        <button class="btn" id="btnPonto" aria-pressed="false">Marcar ponto</button>
-        <button class="btn ghost" id="btnLimpar">Limpar</button>
+        <button class="btn" id="btnPonto" type="button" aria-pressed="false"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-alvo"/></svg>Marcar ponto</button>
+        <button class="btn ghost" id="btnLimpar" type="button">Limpar</button>
       </div>
       <div class="slider-row">
         <input type="range" id="raio" min="1" max="10" step="0.5" value="2" aria-label="Raio em quilômetros">
         <span class="raio-val num" id="raioVal">2,0 km</span>
       </div>
-      <p class="raio-hint" id="raioHint">Clique em “Marcar ponto” e depois no mapa. Os números do painel passam a valer só para o raio.</p>
+      <p class="raio-hint" id="raioHint" aria-live="polite">Clique em “Marcar ponto” e depois no mapa. Os números do painel passam a valer só para o raio.</p>
     </div>
 
     <div class="block">
@@ -393,19 +406,17 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
         </select>
       </div>
       <div class="poi-chips" id="poiChips"></div>
-      <p class="poi-status" id="poiStatus"></p>
-    </div>
-
-    <div class="block">
-      <p class="block-title" id="lgTitle">Quintis</p>
-      <div class="legend" id="legend"></div>
+      <p class="poi-status" id="poiStatus" role="status"></p>
     </div>
 
     <div class="block">
       <div class="readout-head">
         <span class="readout-scope" id="scope">Região Sul</span>
         <span class="readout-code num" id="scopeCode"></span>
-        <span class="epoca-badge" id="epocaBadge" hidden>Projeção 2026</span>
+        <div class="recorte">
+          <span class="chip" id="chipCidade" hidden><span id="chipCidadeNome"></span><button class="chip-x" id="btnLimparCidade" type="button" aria-label="Tirar filtro de cidade" title="Ver a base inteira"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-fechar"/></svg></button></span>
+          <span class="epoca-badge" id="epocaBadge" hidden>Projeção 2026</span>
+        </div>
       </div>
       <div class="stats" id="stats"></div>
       <div class="bars">
@@ -426,40 +437,57 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
     </div>
   </aside>
 
-  <div class="map-wrap" id="mapWrap">
-    <canvas id="cv"></canvas>
-    <canvas id="cvHover"></canvas>
-    <div class="varctl" id="varctl">
-      <button class="varctl-btn" id="varToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
-        <span class="varctl-label" id="varToggleLabel">Sem cor no mapa</span>
-        <svg class="ico ico-sm varctl-chev" aria-hidden="true"><use href="#i-chevron"/></svg>
-      </button>
-      <div class="varctl-menu" id="vars" role="listbox" hidden aria-label="Variável exibida"></div>
-    </div>
-    <div class="endereco">
-      <input id="endInput" type="search" placeholder="Digitar endereço para marcar ponto (rua, número, cidade)"
-             autocomplete="off">
-      <button id="endBtn" type="button" title="Buscar endereço">Marcar</button>
-      <div class="end-status" id="endStatus"></div>
-    </div>
+  <main class="map-wrap" id="mapWrap">
+    <canvas id="cv" role="img" aria-label="Mapa dos setores censitários"></canvas>
+    <canvas id="cvHover" aria-hidden="true"></canvas>
     <div class="bloqueio" id="bloqueio" hidden>
       <div class="bloqueio-inner">
-        <p class="bloqueio-t">Selecione uma cidade</p>
-        <p class="bloqueio-s">Use o campo <b>Ir para a cidade</b> ao lado para começar. O mapa de cada município abre mais rápido que o do estado inteiro.</p>
+        <svg class="ico bloqueio-ico" aria-hidden="true"><use href="#i-buscar"/></svg>
+        <p class="bloqueio-t">Busque uma cidade ou endereço</p>
+        <p class="bloqueio-s">Use a busca no topo do mapa. Um município abre bem mais rápido que a base inteira da região.</p>
       </div>
     </div>
-    <div class="mapctl">
-      <button id="zin" type="button" title="Aproximar" aria-label="Aproximar"><svg class="ico" aria-hidden="true"><use href="#i-mais"/></svg></button>
-      <button id="zout" type="button" title="Afastar" aria-label="Afastar"><svg class="ico" aria-hidden="true"><use href="#i-menos"/></svg></button>
-      <button id="zrst" type="button" title="Enquadrar" aria-label="Enquadrar"><svg class="ico" aria-hidden="true"><use href="#i-enquadrar"/></svg></button>
-      <button id="bmap" type="button" class="wide" aria-pressed="true" title="Desligar o fundo de mapa (precisa de internet)"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-camadas"/></svg>Fundo</button>
-    </div>
-    <div class="poiLeg" id="poiLeg" hidden></div>
-    <div class="attrib" id="attrib" hidden>Esri · OpenStreetMap</div>
-    <div class="carregando" id="carregando" hidden>carregando…</div>
-    <div class="hint">Arraste para mover · role para aproximar</div>
     <div class="tip" id="tip"></div>
-  </div>
+    <div class="map-ui" id="mapUi">
+      <div class="toolbar" id="toolbar">
+        <div class="varctl" id="varctl">
+          <button class="tb-sup varctl-btn" id="varToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="varctl-label" id="varToggleLabel">Sem cor no mapa</span>
+            <svg class="ico ico-sm varctl-chev" aria-hidden="true"><use href="#i-chevron"/></svg>
+          </button>
+          <div class="pop varctl-menu" id="vars" role="listbox" hidden aria-label="Variável exibida"></div>
+        </div>
+        <div class="busca tb-sup" id="buscaBox" role="search">
+          <svg class="ico ico-sm busca-ico" aria-hidden="true"><use href="#i-buscar"/></svg>
+          <input id="busca" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugestoes"
+                 aria-describedby="buscaStatus" aria-label="Buscar cidade ou endereço" placeholder="Buscar cidade ou endereço"
+                 autocomplete="off" spellcheck="false" enterkeyhint="search">
+          <button class="icon-btn busca-limpar" id="buscaLimpar" type="button" aria-label="Limpar busca" hidden><svg class="ico ico-sm" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+          <div class="pop sugestoes" id="sugestoes" role="listbox" aria-label="Resultados da busca" hidden></div>
+          <p class="busca-status" id="buscaStatus" role="status" hidden></p>
+        </div>
+        <div class="tb-grupo tb-sup" role="group" aria-label="Zoom">
+          <button id="zin" type="button" title="Aproximar" aria-label="Aproximar"><svg class="ico" aria-hidden="true"><use href="#i-mais"/></svg></button>
+          <button id="zout" type="button" title="Afastar" aria-label="Afastar"><svg class="ico" aria-hidden="true"><use href="#i-menos"/></svg></button>
+          <button id="zrst" type="button" title="Enquadrar" aria-label="Enquadrar"><svg class="ico" aria-hidden="true"><use href="#i-enquadrar"/></svg></button>
+        </div>
+        <button class="tb-sup tb-btn" id="bmap" type="button" aria-pressed="true" title="Fundo de ruas (precisa de internet)"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-camadas"/></svg><span class="tb-rot">Fundo</span></button>
+      </div>
+      <div class="map-rodape">
+        <section class="legenda-card" id="legendaCard" aria-label="Legenda do mapa">
+          <div class="lg-sec" id="lgVar">
+            <p class="lg-titulo" id="lgTitle">Quintis</p>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="lg-sec" id="poiLeg" hidden></div>
+        </section>
+        <div class="map-rodape-dir">
+          <div class="hint">Arraste para mover · role para aproximar</div>
+          <div class="attrib" id="attrib" hidden>Esri · OpenStreetMap</div>
+        </div>
+      </div>
+    </div>
+  </main>
 </div>
 
 <div class="fontesPage" id="fontesPage" hidden>
@@ -795,11 +823,30 @@ const cvH=document.getElementById('cvHover'), ctxH=cvH.getContext('2d');
 let W=0,H=0,dpr=1, scale=1, tx=0, ty=0, hover=-1;
 let visiveis = [];
 
+// Área útil: a parte do mapa que não fica embaixo do painel flutuante nem da
+// barra do topo. É o retângulo de .map-ui — o CSS decide o layout, o JS só
+// mede —, e enquadrar, zoom e a consulta de estabelecimentos usam ela em vez
+// do canvas inteiro. Medida em resize/ResizeObserver, nunca a cada quadro.
+const mapUi = document.getElementById('mapUi'), toolbar = document.getElementById('toolbar');
+let INSET = {l:0,t:0,r:0,b:0}, wrapRect = null;
+function medirInset(){
+  wrapRect = wrap.getBoundingClientRect();
+  if(!mapUi || !toolbar){ INSET = {l:0,t:0,r:0,b:0}; return; }
+  const u = mapUi.getBoundingClientRect(), tb = toolbar.getBoundingClientRect();
+  const i = {l: u.left-wrapRect.left, r: wrapRect.right-u.right, t: tb.bottom-wrapRect.top+8, b: wrapRect.bottom-u.bottom};
+  // se sobra pouco (celular deitado, janela minúscula), vale o canvas inteiro
+  INSET = (wrapRect.width-i.l-i.r >= 160 && wrapRect.height-i.t-i.b >= 140) ? i : {l:0,t:0,r:0,b:0};
+}
+const centroVisivel = () => {
+  const {l,t,r,b} = INSET;
+  return [l + (W/dpr-l-r)/2, t + (H/dpr-t-b)/2];
+};
 function enquadrar(x0,y0,x1,y1,margem){
+  const {l,t,r,b} = INSET, vw = W/dpr-l-r, vh = H/dpr-t-b;
   const bw=Math.max(x1-x0,1e-6), bh=Math.max(y1-y0,1e-6);
-  scale = Math.min(W/dpr/bw, H/dpr/bh)*(margem||0.94);
-  tx = (W/dpr - bw*scale)/2 - x0*scale;
-  ty = (H/dpr - bh*scale)/2 - y0*scale;
+  scale = Math.min(vw/bw, vh/bh)*(margem||0.94);
+  tx = l + (vw - bw*scale)/2 - x0*scale;
+  ty = t + (vh - bh*scale)/2 - y0*scale;
 }
 const fit = () => enquadrar(X0,Y0,X1,Y1);
 
@@ -824,15 +871,25 @@ function atualizarVisiveis(){
   }
 }
 
+let camaraPronta = false, tamAnterior = '';
+const chaveTamanho = () => [wrap.clientWidth, wrap.clientHeight, Math.min(devicePixelRatio||1,2),
+  mapUi ? mapUi.clientWidth : 0, mapUi ? mapUi.clientHeight : 0, toolbar ? toolbar.offsetHeight : 0].join('|');
 function resize(){
+  tamAnterior = chaveTamanho();
+  // centro de mundo da área útil antes da mudança: redimensionar não faz o mapa saltar
+  let wx = 0, wy = 0;
+  if(camaraPronta){ const [cx, cy] = centroVisivel(); wx = (cx-tx)/scale; wy = (cy-ty)/scale; }
   dpr = Math.min(devicePixelRatio||1, 2);
   W = wrap.clientWidth*dpr; H = wrap.clientHeight*dpr;
   cv.width=W; cv.height=H;
   cvH.width=W; cvH.height=H;
-  if(!scale || scale===1) fit();
+  medirInset();
+  if(!camaraPronta){ fit(); camaraPronta = true; }
+  else { const [cx, cy] = centroVisivel(); tx = cx - wx*scale; ty = cy - wy*scale; }
   criarPadraoNulo();   // o ladrilho é em pixels de tela: acompanha o dpr
   draw();
 }
+function verificarTamanho(){ if(chaveTamanho() !== tamAnterior) resize(); }
 
 // ============================================================ fundo de ruas
 // Só o estilo Neutro (Canvas cinza do Esri) ficou: é o único dos três que
@@ -1346,7 +1403,8 @@ const poisAtivos = new Map();   // id -> [{lon,lat,x,y,nome}]
 const poiCarregando = new Set();
 function areaConsulta(){
   if(ponto) return {tipo:'around', r: Math.round(raioKm*1000), lat: ponto.lat, lon: ponto.lon};
-  const x0=(0-tx)/scale, x1=(W/dpr-tx)/scale, y0=(0-ty)/scale, y1=(H/dpr-ty)/scale;
+  const {l,t,r,b} = INSET;   // só a área útil: o que está sob o painel não entra na consulta
+  const x0=(l-tx)/scale, x1=(W/dpr-r-tx)/scale, y0=(t-ty)/scale, y1=(H/dpr-b-ty)/scale;
   const s=invMerc(-y1), n=invMerc(-y0);
   if((x1-x0) > 0.6 || (n-s) > 0.6) return null;   // área grande demais para o Overpass
   return {tipo:'bbox', s, w:x0, n, e:x1};
@@ -1579,7 +1637,7 @@ function renderReadout(f){
     titulo = 'Raio de ' + fmt1(raioKm) + ' km';
     cod = fmt1(s.setores) + ' setores';
   } else if(cidadeAtiva){
-    s = cidadeAtiva.agg; titulo = 'Cidade: ' + cidadeAtiva.c.n; cod = fmtN(cidadeAtiva.lista.length) + ' setores';
+    s = cidadeAtiva.agg; titulo = cidadeAtiva.c.n; cod = fmtN(cidadeAtiva.lista.length) + ' setores';
   } else {
     s = AGG_TOTAL; titulo = ESCOPO; cod = fmtN(N) + ' setores';
   }
@@ -1713,10 +1771,20 @@ function liberarMapa(){
   if(mapaLiberado) return;
   mapaLiberado = true;
   if(bloqueio) bloqueio.hidden = true;
+  document.getElementById('app')?.classList.remove('bloqueado');
+  habilitarControlesMapa(true);
+}
+// Com o mapa bloqueado, zoom, raio e estabelecimentos não têm o que mostrar:
+// ficam desabilitados em vez de parecerem quebrados.
+function habilitarControlesMapa(on){
+  for(const id of ['zin','zout','zrst','btnPonto','poiSel']){
+    const el = document.getElementById(id); if(el) el.disabled = !on;
+  }
 }
 function atualizarLimparCidade(){
-  const btn = document.getElementById('btnLimparCidade');
-  if(btn) btn.hidden = !cidadeAtiva;
+  const chip = document.getElementById('chipCidade'), nome = document.getElementById('chipCidadeNome');
+  if(chip) chip.hidden = !cidadeAtiva;
+  if(nome) nome.textContent = cidadeAtiva ? 'Cidade: ' + cidadeAtiva.c.n + ' · ' + cidadeAtiva.c.u : '';
 }
 
 // ============================================================ época (Censo 2022 / Projeção 2026)
@@ -1737,63 +1805,171 @@ function montarEpoca(){
 }
 function montarBusca(){
   const input = document.getElementById('busca'), lista = document.getElementById('sugestoes');
+  const status = document.getElementById('buscaStatus'), limpar = document.getElementById('buscaLimpar');
   const semAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
-  if(typeof CIDADES === 'undefined' || CIDADES.length <= 1){
-    // Um só município (mapa de cidade) ou nenhum na base: mapa aberto direto.
-    if(input){ input.disabled = true;
-      input.placeholder = CIDADES && CIDADES.length===1 ? CIDADES[0].n : 'Base de uma cidade só'; }
-    liberarMapa();
-    return;
-  }
-  // Múltiplas cidades: começa bloqueado até a pessoa escolher uma.
-  if(bloqueio) bloqueio.hidden = false;
-  input.placeholder = 'Digite o nome do município (' + fmtN(CIDADES.length) + ')';
-  const chaves = CIDADES.map(c => semAcento(c.n));
-  let sel = -1, atual = [];
+  const variasCidades = typeof CIDADES !== 'undefined' && CIDADES.length > 1;
+  const chaves = variasCidades ? CIDADES.map(c => semAcento(c.n)) : [];
+  const cacheGeo = new Map();
+  let opcoes = [], ativo = -1, buscaPendente = null, ultimaBusca = 0, limparStatus = 0;
 
-  function fechar(){ lista.innerHTML=''; input.setAttribute('aria-expanded','false'); sel=-1; }
+  if(variasCidades){
+    // Várias cidades: começa bloqueado até a pessoa escolher uma (ou achar um endereço).
+    if(bloqueio) bloqueio.hidden = false;
+    habilitarControlesMapa(false);
+    input.placeholder = 'Buscar cidade ou endereço';
+    input.title = fmtN(CIDADES.length) + ' municípios na base; endereços pelo OpenStreetMap';
+  } else {
+    // Um só município (ou nenhum) na base: mapa aberto direto; a busca vale para endereço.
+    input.placeholder = 'Buscar endereço';
+    liberarMapa();
+  }
+
+  function mostrarStatus(txt, erro){
+    clearTimeout(limparStatus);
+    status.textContent = txt || ''; status.hidden = !txt; status.classList.toggle('erro', !!erro);
+  }
+  function fechar(){
+    lista.hidden = true; lista.replaceChildren();
+    input.setAttribute('aria-expanded','false'); input.removeAttribute('aria-activedescendant');
+    opcoes = []; ativo = -1;
+  }
+  function destacar(i){
+    ativo = i;
+    opcoes.forEach((o,k) => o.el.setAttribute('aria-selected', k===i ? 'true' : 'false'));
+    if(i >= 0){ input.setAttribute('aria-activedescendant', opcoes[i].el.id); opcoes[i].el.scrollIntoView({block:'nearest'}); }
+    else input.removeAttribute('aria-activedescendant');
+  }
+  function grupo(rotulo){
+    const g = document.createElement('div'); g.setAttribute('role','group'); g.setAttribute('aria-label', rotulo);
+    const t = document.createElement('div'); t.className = 'sug-grupo'; t.setAttribute('aria-hidden','true'); t.textContent = rotulo;
+    g.appendChild(t); lista.appendChild(g);
+    return g;
+  }
+  function opcao(g, preencher, acao){
+    const el = document.createElement('div');
+    el.className = 'sug'; el.id = 'sug-' + opcoes.length;
+    el.setAttribute('role','option'); el.setAttribute('aria-selected','false');
+    preencher(el);
+    g.appendChild(el);
+    opcoes.push({el, acao});
+    return opcoes.length - 1;
+  }
+  function atualizar(){
+    const bruto = input.value.trim(), q = semAcento(bruto);
+    limpar.hidden = !input.value;
+    if(q.length < 2){ fechar(); return; }
+    mostrarStatus('');
+    lista.replaceChildren(); opcoes = []; ativo = -1;
+    let preDestaque = -1;
+    if(variasCidades){
+      const achadas = [];
+      for(let i=0;i<chaves.length && achadas.length<40;i++) if(chaves[i].startsWith(q)) achadas.push(i);
+      if(achadas.length<40) for(let i=0;i<chaves.length && achadas.length<40;i++)
+        if(!chaves[i].startsWith(q) && chaves[i].includes(q)) achadas.push(i);
+      if(achadas.length){
+        const g = grupo('Cidades');
+        for(const i of achadas){
+          const c = CIDADES[i];
+          const k = opcao(g, el => {
+            const n = document.createElement('span'); n.textContent = c.n;
+            const u = document.createElement('span'); u.className = 'uf'; u.textContent = c.u;
+            el.append(n, u);
+          }, () => irPara(c));
+          // Enter só vai direto para uma cidade quando não há dúvida (nome igual
+          // ao digitado, ou a única que casa); fora isso, Enter busca endereço.
+          if(preDestaque < 0 && (chaves[i] === q || achadas.length === 1)) preDestaque = k;
+        }
+      }
+    }
+    if(bruto.length >= 3){
+      const g = grupo('Endereço');
+      opcao(g, el => {
+        el.classList.add('sug-end');
+        el.insertAdjacentHTML('beforeend', '<svg class="ico ico-sm" aria-hidden="true"><use href="#i-alvo"/></svg>');
+        const t = document.createElement('span'); t.textContent = 'Buscar endereço “' + bruto + '”';
+        el.appendChild(t);
+      }, () => buscarEndereco(bruto));
+    }
+    if(!opcoes.length){ fechar(); return; }
+    lista.hidden = false; input.setAttribute('aria-expanded','true');
+    destacar(preDestaque);
+  }
   function irPara(c){
     liberarMapa();
     enquadrar(c.b[0], c.b[1], c.b[2], c.b[3], 0.86);
     const cidLista = setoresDaCidade(c);
     cidadeAtiva = cidLista ? {c, lista: cidLista, agg: agregar(cidLista)} : null;
     atualizarLimparCidade();
-    hover=-1; renderReadout(-1); draw(); fechar(); input.blur();
+    input.value = ''; limpar.hidden = true; fechar(); mostrarStatus('');
+    hover=-1; renderReadout(-1); draw(); input.blur();
   }
-  input.addEventListener('input', ()=>{
-    const q = semAcento(input.value.trim());
-    if(q.length < 2){ fechar(); return; }
-    atual = [];
-    for(let i=0;i<chaves.length && atual.length<40;i++) if(chaves[i].startsWith(q)) atual.push(CIDADES[i]);
-    if(atual.length<40) for(let i=0;i<chaves.length && atual.length<40;i++){
-      if(!chaves[i].startsWith(q) && chaves[i].includes(q)) atual.push(CIDADES[i]);
+  // O Nominatim é gratuito e pede uso consciente: nada de consulta por tecla.
+  // Só sai com ação explícita (Enter sem cidade destacada, ou clique na opção),
+  // uma de cada vez, no máximo uma por segundo, e o que já foi achado fica em cache.
+  async function buscarEndereco(q){
+    fechar();
+    if(buscaPendente) buscaPendente.abort();
+    const chave = q.toLowerCase();
+    let r = cacheGeo.get(chave);
+    if(r === undefined){
+      const ctrl = buscaPendente = new AbortController();
+      input.setAttribute('aria-busy','true'); mostrarStatus('Buscando endereço…');
+      try{
+        const espera = 1000 - (Date.now() - ultimaBusca);
+        if(espera > 0) await new Promise(ok => setTimeout(ok, espera));
+        if(ctrl.signal.aborted) return;
+        ultimaBusca = Date.now();
+        r = await geocodificar(q, ctrl.signal);
+        cacheGeo.set(chave, r);
+      }catch(err){
+        if(!ctrl.signal.aborted)
+          mostrarStatus('A busca de endereço falhou (' + err.message + '). O serviço gratuito às vezes recusa; tente de novo em instantes.', true);
+        return;
+      }finally{
+        if(buscaPendente === ctrl){ buscaPendente = null; input.removeAttribute('aria-busy'); }
+      }
     }
-    lista.innerHTML = atual.map((c,i)=>
-      `<div class="sug" role="option" data-i="${i}"><span>${c.n}</span><span class="uf">${c.u}</span></div>`).join('');
-    input.setAttribute('aria-expanded', atual.length?'true':'false');
-    sel = -1;
-  });
-  lista.addEventListener('mousedown', e=>{
-    const el = e.target.closest('.sug'); if(!el) return;
-    e.preventDefault(); irPara(atual[+el.dataset.i]);
-  });
-  input.addEventListener('keydown', e=>{
-    if(!atual.length) return;
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    if(!r){ mostrarStatus('Não achei esse endereço. Inclua número e cidade, por exemplo “Rua XV de Novembro, 700, Curitiba”.', true); return; }
+    input.value = ''; limpar.hidden = true;
+    irParaEndereco(r);
+    mostrarStatus(r.nome.length > 90 ? r.nome.slice(0,88) + '…' : r.nome);
+    limparStatus = setTimeout(() => mostrarStatus(''), 4000);
+  }
+
+  input.addEventListener('input', atualizar);
+  input.addEventListener('focus', () => { if(input.value.trim().length >= 2) atualizar(); });
+  input.addEventListener('blur', () => setTimeout(() => { if(document.activeElement !== input) fechar(); }, 120));
+  input.addEventListener('keydown', e => {
+    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      if(lista.hidden) atualizar();
+      const n = opcoes.length; if(!n) return;
       e.preventDefault();
-      sel = (sel + (e.key==='ArrowDown'?1:-1) + atual.length) % atual.length;
-      [...lista.children].forEach((c,i)=>c.classList.toggle('sel', i===sel));
-      lista.children[sel]?.scrollIntoView({block:'nearest'});
-    } else if(e.key==='Enter'){ e.preventDefault(); irPara(atual[sel<0?0:sel]); }
-    else if(e.key==='Escape') fechar();
+      const passo = e.key === 'ArrowDown' ? 1 : -1;
+      destacar(ativo < 0 ? (passo > 0 ? 0 : n-1) : (ativo + passo + n) % n);
+    } else if(e.key === 'Enter'){
+      e.preventDefault();
+      if(!lista.hidden && ativo >= 0) opcoes[ativo].acao();
+      else if(input.value.trim().length >= 3) buscarEndereco(input.value.trim());
+    } else if(e.key === 'Escape'){
+      // um passo por vez: fecha a lista, depois cancela a busca, depois limpa o campo
+      if(!lista.hidden){ fechar(); e.preventDefault(); }
+      else if(buscaPendente){ buscaPendente.abort(); buscaPendente = null; input.removeAttribute('aria-busy'); mostrarStatus(''); e.preventDefault(); }
+      else if(input.value){ input.value = ''; limpar.hidden = true; mostrarStatus(''); e.preventDefault(); }
+    }
   });
-  input.addEventListener('blur', ()=>setTimeout(fechar,120));
+  lista.addEventListener('mousedown', e => e.preventDefault());   // o clique não tira o foco do campo
+  lista.addEventListener('click', e => {
+    const el = e.target.closest('.sug'); if(!el) return;
+    const k = opcoes.findIndex(o => o.el === el); if(k >= 0) opcoes[k].acao();
+  });
+  limpar.addEventListener('click', () => { input.value = ''; limpar.hidden = true; fechar(); mostrarStatus(''); input.focus(); });
 
   const btnLimparCidade = document.getElementById('btnLimparCidade');
   if(btnLimparCidade) btnLimparCidade.onclick = () => {
     cidadeAtiva = null; atualizarLimparCidade();
     fit(); hover=-1; renderReadout(-1); draw();
   };
+  if(variasCidades && matchMedia('(pointer:fine)').matches) input.focus({preventScroll:true});
 }
 
 // ============================================================ endereço → ponto
@@ -1801,44 +1977,23 @@ function montarBusca(){
 // consciente exige um User-Agent — o navegador manda o dele, o que já basta
 // para não ser bloqueado. Restringe ao Brasil para evitar coincidências
 // bobas (uma rua homônima em Portugal).
-async function geocodificar(texto){
+async function geocodificar(texto, signal){
   const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1'
     + '&countrycodes=br&addressdetails=0&q=' + encodeURIComponent(texto);
-  const r = await fetch(url, {headers:{'Accept-Language':'pt-BR'}});
+  const r = await fetch(url, {headers:{'Accept-Language':'pt-BR'}, signal});
   if(!r.ok) throw new Error('HTTP ' + r.status);
   const j = await r.json();
   if(!j.length) return null;
   return {lat: parseFloat(j[0].lat), lon: parseFloat(j[0].lon),
           nome: j[0].display_name};
 }
-function montarEndereco(){
-  const inp = document.getElementById('endInput');
-  const btn = document.getElementById('endBtn');
-  const st  = document.getElementById('endStatus');
-  const executar = async () => {
-    const q = inp.value.trim();
-    if(q.length < 3){ st.className='end-status on erro'; st.textContent='Digite ao menos 3 caracteres.'; return; }
-    btn.disabled = true; st.className='end-status on'; st.textContent='Buscando endereço…';
-    try{
-      const r = await geocodificar(q);
-      if(!r){ st.className='end-status on erro'; st.textContent='Não achei esse endereço no OpenStreetMap.'; return; }
-      // Coloca o ponto do raio no lugar geocodificado; se o mapa ainda não
-      // liberou, libera junto (usar um endereço vale por escolher a cidade).
-      liberarMapa();
-      ponto = {lon:r.lon, lat:r.lat, x:r.lon, y:-merc(r.lat)};
-      // Reenquadra o mapa em torno do endereço, com uma margem do raio atual.
-      const dGrau = (raioKm/111.32) * 2.5;
-      enquadrar(r.lon-dGrau, -merc(r.lat)-dGrau, r.lon+dGrau, -merc(r.lat)+dGrau, 0.9);
-      recalcularRaio(); renderReadout(-1); atualizarHint(); draw();
-      st.className='end-status on'; st.textContent = r.nome.length > 90 ? r.nome.slice(0,88)+'…' : r.nome;
-      setTimeout(()=>{ st.className='end-status'; }, 4000);
-    }catch(err){
-      st.className='end-status on erro';
-      st.textContent = 'Falha na busca ('+err.message+'). O Nominatim é gratuito e às vezes rejeita — tente de novo em instantes.';
-    }finally{ btn.disabled = false; }
-  };
-  btn.addEventListener('click', executar);
-  inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); executar(); } });
+// Um endereço vale como escolha: libera o mapa e põe o ponto do raio no lugar achado.
+function irParaEndereco(r){
+  liberarMapa();
+  ponto = {lon:r.lon, lat:r.lat, x:r.lon, y:-merc(r.lat)};
+  const dGrau = (raioKm/111.32) * 2.5;   // reenquadra com uma margem do raio atual
+  enquadrar(r.lon-dGrau, -merc(r.lat)-dGrau, r.lon+dGrau, -merc(r.lat)+dGrau, 0.9);
+  recalcularRaio(); renderReadout(-1); atualizarHint(); draw();
 }
 
 // ============================================================ controles do raio
@@ -1927,11 +2082,12 @@ cv.addEventListener('mousemove', e=>{
     tip.innerHTML = linhaVar
       + `<span class="t-k">${fmtN(Vp(f,'hab'))} hab · ${fmtN(Vp(f,'dom'))} domicílios</span>`;
     tip.classList.add('on');
-    const r = wrap.getBoundingClientRect();
+    // limites da área útil já medidos: nada de getBoundingClientRect (reflow) a cada movimento
+    const limD = W/dpr - INSET.r, limB = H/dpr - INSET.b;
     let L=e.offsetX+14, T=e.offsetY+14;
-    if(L+230>r.width) L=e.offsetX-230;
-    if(T+92>r.height) T=e.offsetY-92;
-    tip.style.left=L+'px'; tip.style.top=T+'px';
+    if(L+240>limD) L=e.offsetX-240;
+    if(T+92>limB) T=e.offsetY-92;
+    tip.style.left=L+'px'; tip.style.top=Math.max(INSET.t, T)+'px';
   } else tip.classList.remove('on');
 });
 cv.addEventListener('mouseleave', ()=>{
@@ -1945,7 +2101,7 @@ cv.addEventListener('wheel', e=>{
   pedirDesenho();
 },{passive:false});
 
-const zoomPor = k => { const mx=wrap.clientWidth/2, my=wrap.clientHeight/2;
+const zoomPor = k => { const [mx,my] = centroVisivel();
   tx=mx-(mx-tx)*k; ty=my-(my-ty)*k; scale*=k; draw(); };
 document.getElementById('zin').onclick  = ()=>zoomPor(1.45);
 document.getElementById('zout').onclick = ()=>zoomPor(1/1.45);
@@ -1961,7 +2117,10 @@ btnMapa.onclick = () => {
   draw();
 };
 
-addEventListener('resize', resize);
+// Observador em vez de só window.resize: pega também mudanças de layout que
+// não mexem na janela (barra quebrando linha, painel recolhido, bottom sheet).
+addEventListener('resize', verificarTamanho);
+{ const ro = new ResizeObserver(verificarTamanho); for(const el of [wrap, mapUi, toolbar]) if(el) ro.observe(el); }
 
 // ============================================================ tema
 // O <head> já resolveu o tema antes do 1º paint: data-theme é sempre
@@ -2029,7 +2188,7 @@ function montarFontes(){
 classify();
 AGG_TOTAL = agregar(null);
 atualizarCSSV();
-montarVars(); pintarSwatches(); renderLegend(); montarBusca(); montarRaio(); renderPois(); montarEndereco(); montarEpoca();
+montarVars(); pintarSwatches(); renderLegend(); montarBusca(); montarRaio(); renderPois(); montarEpoca();
 montarVarToggle(); montarFontes();
 renderReadout(-1);
 resize();
