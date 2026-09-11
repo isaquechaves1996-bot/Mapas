@@ -135,9 +135,9 @@ h1{margin:0;font-size:var(--fs-lg);font-weight:600;letter-spacing:-.01em;line-he
 .seg.tema .seg-opt{padding:0}
 
 /* ---------------------------------------------------------------- campos e botões */
-#epoca,.poi-drop select{width:100%;height:var(--alvo);font:inherit;font-size:var(--fs-sm);padding:0 var(--sp-3);
+.poi-drop select{width:100%;height:var(--alvo);font:inherit;font-size:var(--fs-sm);padding:0 var(--sp-3);
   border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface-2);color:var(--ink);cursor:pointer}
-#epoca:hover,.poi-drop select:hover{border-color:var(--ink-3)}
+.poi-drop select:hover{border-color:var(--ink-3)}
 .poi-drop select:disabled{cursor:not-allowed;opacity:.55}
 .epoca-nota{font-size:var(--fs-2xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45}
 .btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);
@@ -171,9 +171,10 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .poi-chip .x:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink)}
 .poi-status{font-size:var(--fs-xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45;min-height:1em}
 
-/* ---------------------------------------------------------------- leitura */
+/* ---------------------------------------------------------------- leitura: escopo, KPIs, distribuição, lista */
 .readout-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-1) var(--sp-2);margin-bottom:var(--sp-3)}
-.readout-scope{font-family:var(--font-cond);font-size:var(--fs-lg);font-weight:600;line-height:var(--lh-tight)}
+.readout-scope{margin:0;min-width:0;font-family:var(--font-cond);font-size:var(--fs-xl);font-weight:600;
+  line-height:var(--lh-tight);letter-spacing:-.005em;overflow-wrap:anywhere}
 .readout-code{font-size:var(--fs-2xs);color:var(--ink-3)}
 .recorte{flex-basis:100%;display:flex;flex-wrap:wrap;gap:var(--sp-1)}
 .recorte:not(:has(> :not([hidden]))){display:none}
@@ -185,20 +186,44 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .epoca-badge{display:inline-flex;align-items:center;height:26px;padding:0 var(--sp-2);border-radius:var(--r-pill);
   font-size:var(--fs-2xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   color:var(--accent-ink);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3) var(--sp-4)}
-.stat{display:flex;flex-direction:column;min-width:0}
-.stat-k{font-size:var(--fs-2xs);color:var(--ink-3)}
-.stat-v{font-size:var(--fs-md);font-weight:500;letter-spacing:-.01em}
-.stat-v small{font-size:var(--fs-2xs);color:var(--ink-3);font-weight:400;margin-left:2px}
-.bars{margin-top:var(--sp-4)}
-.donut-wrap{display:flex;align-items:center;gap:var(--sp-4);margin-top:var(--sp-2)}
-.donut{flex:none}
-.donut-track{fill:none;stroke:var(--line-2);stroke-width:16}
-.donut circle{transition:stroke-dasharray .2s, stroke-dashoffset .2s}
-.donut-center{font-size:11px;fill:var(--ink-3);font-family:inherit}
-.bar-key{display:flex;flex-direction:column;gap:5px}
-.bk{display:flex;align-items:center;gap:6px;font-size:var(--fs-2xs);color:var(--ink-2)}
-.bk i{width:8px;height:8px;border-radius:2px;display:block;flex:none}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2)}
+.kpi{min-width:0;display:flex;flex-direction:column;gap:var(--sp-1);padding:var(--sp-2) var(--sp-3) var(--sp-3);
+  background:var(--surface-2);border-radius:var(--r-md)}
+.kpi-k{font-size:var(--fs-2xs);line-height:1.25;color:var(--ink-3)}
+.kpi-v{margin-top:auto;font-size:var(--fs-xl);font-weight:600;letter-spacing:-.02em;line-height:1.05;white-space:nowrap;
+  font-variant-numeric:lining-nums proportional-nums}
+.kpi-pre{margin-right:3px;font-size:var(--fs-2xs);font-weight:500;letter-spacing:0;color:var(--ink-3)}
+.dist{margin-top:var(--sp-4)}
+.stats{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--sp-4);margin:var(--sp-4) 0 0}
+.stat{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-2);min-width:0;
+  padding:6px 0;border-top:1px solid var(--line-2)}
+.stat dt{font-size:var(--fs-2xs);color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat dd{margin:0;font-size:var(--fs-xs);font-weight:500;color:var(--ink);white-space:nowrap}
+.stat dd small{margin-left:3px;font-family:var(--font-sans);font-size:var(--fs-2xs);font-weight:400;color:var(--ink-3)}
+
+/* ---------------------------------------------------------------- régua de classes (a assinatura)
+   A mesma barra segmentada na legenda do mapa, na distribuição de renda do
+   painel e no menu de variáveis: 2px de superfície entre os segmentos, pontas
+   arredondadas e texto sempre em tinta — nunca na cor do dado. */
+.regua{--n:5;display:flex;flex-direction:column;gap:var(--sp-1)}
+.regua-barra{display:flex;gap:2px;border-radius:4px;overflow:hidden}
+.regua-seg{flex:1 1 0;min-width:0;height:12px;background:var(--surface-3)}
+.regua--painel .regua-seg{height:10px;transition:flex-grow .2s ease}
+.regua-letras,.regua-n{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:2px;text-align:center}
+.regua-letras{font-size:var(--fs-xs);font-weight:600;line-height:1;color:var(--ink)}
+.regua-cortes{position:relative;height:14px;font-size:var(--fs-2xs);line-height:14px;color:var(--ink-2)}
+.regua-corte{position:absolute;top:0;translate:-50% 0;white-space:nowrap}
+.regua-n{font-size:var(--fs-2xs);line-height:1.2;color:var(--ink-3)}
+.regua-chave{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--sp-1);margin-top:2px}
+.regua-item{display:flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;font-size:var(--fs-2xs);color:var(--ink-2)}
+.regua-item b{font-weight:600;color:var(--ink)}
+.regua-tique{width:8px;height:8px;border-radius:2px;flex:none}
+.regua.vazia .regua-barra{opacity:.35}
+.regua--mini{flex:none;flex-direction:row}
+.regua--mini .regua-barra{width:40px}
+.regua--mini .regua-seg{height:8px}
+.sw-nulo{display:inline-block;flex:none;width:12px;height:12px;border-radius:3px;
+  background:repeating-linear-gradient(135deg,var(--map-null) 0 1.5px,transparent 1.5px 4px),color-mix(in srgb,var(--map-null) 35%,transparent)}
 .foot{padding:var(--sp-3) var(--sp-5) var(--sp-4);margin-top:auto}
 .foot-link{font-size:var(--fs-xs);color:var(--accent);text-decoration:none;font-weight:500;display:inline-flex;align-items:center;gap:var(--sp-1)}
 .foot-link:hover{text-decoration:underline}
@@ -222,10 +247,10 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
   min-height:var(--alvo);padding:0 var(--sp-3);font:inherit;font-size:var(--fs-sm);cursor:pointer;
   display:flex;align-items:center;gap:var(--sp-2);border-radius:var(--r-sm)}
 .var:hover{background:var(--surface-2);color:var(--ink)}
-.var[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.var[aria-checked="true"]{background:var(--accent-soft);color:var(--ink);font-weight:500}
 .swatch{width:10px;height:10px;border-radius:3px;flex:none}
 .var.sem-cor{margin-bottom:2px;box-shadow:0 1px 0 var(--line-2)}
-.var.sem-cor[aria-pressed="true"]{background:var(--surface-3)}
+.var.sem-cor[aria-checked="true"]{background:var(--surface-3)}
 .swatch-off{border:1.5px solid var(--ink-3);border-radius:50%;background:transparent!important;position:relative}
 .swatch-off::after{content:'';position:absolute;left:-1.5px;top:50%;width:12px;height:1.5px;background:var(--ink-3);transform:rotate(45deg)}
 
@@ -272,18 +297,17 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 }
 
 /* ---------------------------------------------------------------- rodapé do mapa: legenda + créditos */
-.map-rodape{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-2);pointer-events:none}
-.legenda-card{pointer-events:auto;width:min(340px,100%);max-height:55dvh;overflow:auto;padding:var(--sp-3) var(--sp-4);
+.map-rodape{margin-top:auto;display:flex;flex-wrap:wrap-reverse;align-items:flex-end;justify-content:space-between;gap:var(--sp-2);pointer-events:none}
+.legenda-card{pointer-events:auto;flex:0 1 340px;width:min(340px,100%);container:legenda / inline-size;max-height:55dvh;overflow:auto;padding:var(--sp-3) var(--sp-4);
   display:flex;flex-direction:column;gap:var(--sp-3);background:var(--surface);
   border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-md)}
 .app.bloqueado .legenda-card,.app.bloqueado .hint{display:none}
-.lg-titulo{margin:0 0 var(--sp-2);font-size:var(--fs-sm);font-weight:600}
-.legend{display:flex;flex-direction:column;gap:2px}
-.lg-row{display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:var(--sp-2);padding:2px 0}
-.lg-chip{width:14px;height:14px;border-radius:4px}
-.lg-label{font-size:var(--fs-xs);color:var(--ink-2)}
-.lg-sub{color:var(--ink-3);font-size:var(--fs-2xs)}
-.lg-n{font-size:var(--fs-2xs);color:var(--ink-3)}
+.lg-cab{margin-bottom:var(--sp-3)}
+.lg-titulo{margin:0;font-size:var(--fs-sm);font-weight:600}
+.lg-sub{margin:2px 0 0;font-size:var(--fs-2xs);line-height:1.35;color:var(--ink-3)}
+.lg-nulo{display:flex;align-items:center;gap:6px;margin:var(--sp-2) 0 0;font-size:var(--fs-2xs);color:var(--ink-3)}
+.lg-nulo .num{margin-left:auto}
+@container legenda (max-width:300px){ .regua--legenda .regua-n{display:none} }
 #poiLeg{display:flex;flex-direction:column;gap:var(--sp-1);padding-top:var(--sp-3);border-top:1px solid var(--line-2)}
 .pl-row{display:flex;align-items:center;gap:var(--sp-2);color:var(--ink-2);font-size:var(--fs-xs)}
 .pl-row svg{display:block;flex:none}
@@ -295,9 +319,12 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 /* ---------------------------------------------------------------- tooltip */
 .tip{position:absolute;z-index:3;pointer-events:none;background:var(--surface);border:1px solid var(--line);
   border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-xs);box-shadow:var(--shadow-md);
-  opacity:0;transition:opacity .1s;max-width:240px}
+  opacity:0;transition:opacity .1s;max-width:260px;display:flex;flex-direction:column;gap:1px}
 .tip.on{opacity:1}
-.tip .t-v{font-weight:600;font-size:var(--fs-sm);display:block}
+.t-classe{display:flex;align-items:center;gap:6px;margin-bottom:var(--sp-1);font-size:var(--fs-2xs);font-weight:600;color:var(--ink)}
+.t-sw{width:10px;height:10px;border-radius:3px;flex:none}
+.t-sw.nulo{background:repeating-linear-gradient(135deg,var(--map-null) 0 1.5px,transparent 1.5px 4px),color-mix(in srgb,var(--map-null) 35%,transparent)!important}
+.tip .t-v{font-weight:600;font-size:var(--fs-sm)}
 .tip .t-k{color:var(--ink-3);font-size:var(--fs-2xs)}
 
 /* ---------------------------------------------------------------- bloqueio até escolher cidade ou endereço
@@ -376,13 +403,30 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
       <p class="sub">65.170 setores censitários. Busque uma cidade ou endereço no topo do mapa, passe o cursor sobre um setor ou marque um ponto para analisar um raio.</p>
     </div>
 
+    <section class="block leitura" aria-labelledby="scope">
+      <div class="readout-head">
+        <h2 class="readout-scope" id="scope">Região Sul</h2>
+        <span class="readout-code num" id="scopeCode"></span>
+        <div class="recorte">
+          <span class="chip" id="chipCidade" hidden><span id="chipCidadeNome"></span><button class="chip-x" id="btnLimparCidade" type="button" aria-label="Tirar filtro de cidade" title="Ver a base inteira"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-fechar"/></svg></button></span>
+          <span class="epoca-badge" id="epocaBadge" hidden>Projeção 2026</span>
+        </div>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="dist">
+        <p class="block-title" id="reguaRendaTit">Responsáveis por faixa de renda</p>
+        <div id="reguaRenda" role="group" aria-labelledby="reguaRendaTit"></div>
+      </div>
+      <dl class="stats" id="stats"></dl>
+    </section>
+
     <div class="block">
-      <p class="block-title">Base de dados</p>
-      <select id="epoca" aria-label="Base de dados">
-        <option value="censo">Censo 2022 (oficial)</option>
-        <option value="proj2026">Projeção 2026 (estimativa)</option>
-      </select>
-      <p class="epoca-nota" id="epocaNota" hidden>Números estimados a partir do Censo 2022, não é dado oficial do IBGE — veja como em "Fontes", no rodapé.</p>
+      <p class="block-title" id="epocaTit">Base de dados</p>
+      <fieldset class="seg" id="epoca" aria-labelledby="epocaTit">
+        <label><input type="radio" name="epoca" value="censo" checked autocomplete="off"><span class="seg-opt">Censo 2022</span></label>
+        <label><input type="radio" name="epoca" value="proj2026" autocomplete="off"><span class="seg-opt">Projeção 2026</span></label>
+      </fieldset>
+      <p class="epoca-nota" id="epocaNota" hidden>Números estimados a partir do Censo 2022, não é dado oficial do IBGE — veja como em “Fontes”, no rodapé.</p>
     </div>
 
     <div class="block">
@@ -409,29 +453,6 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
       <p class="poi-status" id="poiStatus" role="status"></p>
     </div>
 
-    <div class="block">
-      <div class="readout-head">
-        <span class="readout-scope" id="scope">Região Sul</span>
-        <span class="readout-code num" id="scopeCode"></span>
-        <div class="recorte">
-          <span class="chip" id="chipCidade" hidden><span id="chipCidadeNome"></span><button class="chip-x" id="btnLimparCidade" type="button" aria-label="Tirar filtro de cidade" title="Ver a base inteira"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-fechar"/></svg></button></span>
-          <span class="epoca-badge" id="epocaBadge" hidden>Projeção 2026</span>
-        </div>
-      </div>
-      <div class="stats" id="stats"></div>
-      <div class="bars">
-        <p class="block-title" style="margin-bottom:2px">Responsáveis por faixa de renda</p>
-        <div class="donut-wrap">
-          <svg class="donut" viewBox="0 0 120 120" width="112" height="112" role="img" aria-label="Distribuição de responsáveis por faixa de renda">
-            <circle class="donut-track" cx="60" cy="60" r="42"></circle>
-            <g id="donutSegs" transform="rotate(-90 60 60)"></g>
-            <text id="donutCenter" class="donut-center" x="60" y="60" text-anchor="middle" dominant-baseline="central"></text>
-          </svg>
-          <div class="bar-key" id="barKey"></div>
-        </div>
-      </div>
-    </div>
-
     <div class="foot">
       <a href="#" id="linkFontes" class="foot-link">Sobre as fontes e a metodologia <svg class="ico ico-sm" aria-hidden="true"><use href="#i-seta-dir"/></svg></a>
     </div>
@@ -447,15 +468,15 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
         <p class="bloqueio-s">Use a busca no topo do mapa. Um município abre bem mais rápido que a base inteira da região.</p>
       </div>
     </div>
-    <div class="tip" id="tip"></div>
+    <div class="tip" id="tip" aria-hidden="true"></div>
     <div class="map-ui" id="mapUi">
       <div class="toolbar" id="toolbar">
         <div class="varctl" id="varctl">
-          <button class="tb-sup varctl-btn" id="varToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <button class="tb-sup varctl-btn" id="varToggle" type="button" aria-haspopup="menu" aria-expanded="false">
             <span class="varctl-label" id="varToggleLabel">Sem cor no mapa</span>
             <svg class="ico ico-sm varctl-chev" aria-hidden="true"><use href="#i-chevron"/></svg>
           </button>
-          <div class="pop varctl-menu" id="vars" role="listbox" hidden aria-label="Variável exibida"></div>
+          <div class="pop varctl-menu" id="vars" role="menu" aria-labelledby="varToggle" hidden></div>
         </div>
         <div class="busca tb-sup" id="buscaBox" role="search">
           <svg class="ico ico-sm busca-ico" aria-hidden="true"><use href="#i-buscar"/></svg>
@@ -476,8 +497,12 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
       <div class="map-rodape">
         <section class="legenda-card" id="legendaCard" aria-label="Legenda do mapa">
           <div class="lg-sec" id="lgVar">
-            <p class="lg-titulo" id="lgTitle">Quintis</p>
-            <div class="legend" id="legend"></div>
+            <div class="lg-cab">
+              <p class="lg-titulo" id="lgTitle"></p>
+              <p class="lg-sub" id="lgSub"></p>
+            </div>
+            <div id="legend"></div>
+            <p class="lg-nulo" id="lgNuloLinha" hidden><i class="sw-nulo" aria-hidden="true"></i>Sem dado <span class="num" id="lgNulos"></span></p>
           </div>
           <div class="lg-sec" id="poiLeg" hidden></div>
         </section>
@@ -721,6 +746,82 @@ const NF0 = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
 const NF1 = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
 const fmtN = v => v==null?'—':NF0.format(v);
 const fmt1 = v => v==null?'—':NF1.format(v);
+// Números grandes em destaque vão curtos (1,8 mi); o valor cheio fica no title.
+const NFc = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:1});
+const fmtKpi = v => v==null ? '—' : (Math.abs(v) >= 1e6 ? NFc.format(v/1e6)+' mi' : NF0.format(v));
+
+// Escritas que só tocam o DOM quando o valor muda: o painel e a legenda são
+// re-renderizados a cada setor que o mouse cruza, e escrever o mesmo texto ou
+// a mesma cor de novo ainda custa recálculo de estilo.
+function setTxt(el, t){ if(el._t !== t){ el._t = t; el.textContent = t; } }
+function setTxtNo(no, t){ if(no.data !== t) no.data = t; }
+function setCor(el, c){ if(el._c !== c){ el._c = c; el.style.backgroundColor = c; } }
+function setVis(el, v){ if(el.hidden === v) el.hidden = !v; }
+
+// ============================================================ régua de classes
+// A assinatura visual: uma barra segmentada E→A (ou dos quintis) que é a
+// legenda do mapa, a distribuição de renda do painel e a amostra do menu —
+// mesmas cores, mesma ordem, mesmas letras. Os nós nascem uma vez.
+function montarRegua(host, modo){
+  const mk = (tag, cls, pai) => { const e = document.createElement(tag); if(cls) e.className = cls; pai.appendChild(e); return e; };
+  host.classList.add('regua', 'regua--' + modo);
+  const rg = {host, modo, n:-1, segs:[], letras:[], cortes:[], ns:[], itens:[], tiques:[], valores:[]};
+  if(modo === 'legenda') rg.linhaLetras = mk('div', 'regua-letras', host);
+  rg.barra = mk('div', 'regua-barra', host);
+  for(let i=0;i<5;i++) rg.segs.push(mk('span', 'regua-seg', rg.barra));
+  if(modo === 'legenda'){
+    for(let i=0;i<5;i++) rg.letras.push(mk('span', '', rg.linhaLetras));
+    const linhaCortes = mk('div', 'regua-cortes num', host);
+    for(let i=0;i<4;i++) rg.cortes.push(mk('span', 'regua-corte', linhaCortes));
+    const linhaN = mk('div', 'regua-n num', host);
+    for(let i=0;i<5;i++) rg.ns.push(mk('span', '', linhaN));
+  } else if(modo === 'painel'){
+    const chave = mk('div', 'regua-chave', host);
+    for(let i=0;i<5;i++){
+      const item = mk('span', 'regua-item', chave);
+      const t = mk('i', 'regua-tique', item); t.setAttribute('aria-hidden','true');
+      rg.itens.push(item); rg.tiques.push(t);
+      rg.letras.push(mk('b', '', item));
+      rg.valores.push(mk('span', 'num', item));
+    }
+  }
+  return rg;
+}
+function renderRegua(rg, o){
+  const n = o.n ?? o.cores.length;
+  if(rg.n !== n){ rg.n = n; rg.host.style.setProperty('--n', n); }
+  for(let i=0;i<5;i++){
+    const on = i < n;
+    setVis(rg.segs[i], on && (!o.pesos || o.pesos[i] > 0.05));
+    if(rg.modo === 'legenda'){ setVis(rg.letras[i], on); setVis(rg.ns[i], on); }
+    else if(rg.modo === 'painel') setVis(rg.itens[i], on);
+    if(!on) continue;
+    const seg = rg.segs[i];
+    setCor(seg, o.cores[i]);
+    if(o.pesos){ const g = String(Math.max(o.pesos[i]||0, 0)); if(seg._g !== g){ seg._g = g; seg.style.flexGrow = g; } }
+    if(o.titulos && seg.title !== o.titulos[i]) seg.title = o.titulos[i];
+    if(rg.modo === 'legenda'){
+      setTxt(rg.letras[i], o.letras ? o.letras[i] : '');
+      setTxt(rg.ns[i], o.contagens ? fmtN(o.contagens[i]) : '');
+    } else if(rg.modo === 'painel'){
+      setCor(rg.tiques[i], o.cores[i]);
+      setTxt(rg.letras[i], o.letras ? o.letras[i] : '');
+      setTxt(rg.valores[i], o.valores ? o.valores[i] : '');
+      if(o.titulos && rg.itens[i].title !== o.titulos[i]) rg.itens[i].title = o.titulos[i];
+    }
+  }
+  if(rg.modo === 'legenda'){
+    rg.linhaLetras.hidden = !o.letras;
+    for(let i=0;i<4;i++){
+      const corte = rg.cortes[i], on = !!o.cortes && i < n-1;
+      setVis(corte, on);
+      if(!on) continue;
+      setTxt(corte, o.cortes[i]);
+      const esq = ((i+1)*100/n).toFixed(2) + '%';
+      if(corte._l !== esq){ corte._l = esq; corte.style.left = esq; }
+    }
+  }
+}
 
 // Classes A–E (padrão de mercado, em múltiplos do salário mínimo) em vez de
 // quintis: os cortes são fixos, não dependem da distribuição do recorte —
@@ -740,12 +841,12 @@ function cortesRenda(){
 }
 const VARS = [
   {id:'rmed',    nome:'Renda média do responsável', ramp:'renda',  fmt:v=>'R$ '+fmtN(v), curto:'Renda média',
-   classesFixas: cortesRenda, rotulosClasse: CLASSES_RENDA},
-  {id:'f_10mais',nome:'Responsáveis com 10+ SM',    ramp:'teal',   fmt:v=>fmt1(v)+'%',   curto:'10+ salários mínimos'},
-  {id:'dens',    nome:'Densidade demográfica',      ramp:'indigo', fmt:v=>fmtN(v),       curto:'hab/km²'},
-  {id:'papto',   nome:'Domicílios em apartamento',  ramp:'ocre',   fmt:v=>fmt1(v)+'%',   curto:'% apartamentos'},
-  {id:'pvago',   nome:'Domicílios vagos',           ramp:'brick',  fmt:v=>fmt1(v)+'%',   curto:'% vagos'},
-  {id:'pidoso',  nome:'População com 60 anos ou +', ramp:'plum',   fmt:v=>fmt1(v)+'%',   curto:'% 60 anos ou +'}
+   classesFixas: cortesRenda, rotulosClasse: CLASSES_RENDA, fmtCorte: fmtN, unidade:'R$'},
+  {id:'f_10mais',nome:'Responsáveis com 10+ SM',    ramp:'teal',   fmt:v=>fmt1(v)+'%',   curto:'Responsáveis com 10+ SM', fmtCorte: fmt1, unidade:'%'},
+  {id:'dens',    nome:'Densidade demográfica',      ramp:'indigo', fmt:v=>fmtN(v)+' hab/km²', curto:'Densidade', fmtCorte: fmtN, unidade:'hab/km²'},
+  {id:'papto',   nome:'Domicílios em apartamento',  ramp:'ocre',   fmt:v=>fmt1(v)+'%',   curto:'Apartamentos', fmtCorte: fmt1, unidade:'%'},
+  {id:'pvago',   nome:'Domicílios vagos',           ramp:'brick',  fmt:v=>fmt1(v)+'%',   curto:'Domicílios vagos', fmtCorte: fmt1, unidade:'%'},
+  {id:'pidoso',  nome:'População com 60 anos ou +', ramp:'plum',   fmt:v=>fmt1(v)+'%',   curto:'60 anos ou +', fmtCorte: fmt1, unidade:'%'}
 ];
 let cur = VARS[0];
 
@@ -1578,56 +1679,61 @@ function renderPois(){
 function renderLegendaPois(){
   const box = document.getElementById('poiLeg');
   const ativos = CATS.filter(c => poisAtivos.has(c.id) || poiCarregando.has(c.id));
-  if(!ativos.length){ box.hidden = true; box.innerHTML=''; return; }
+  if(!ativos.length){ box.hidden = true; box.innerHTML=''; atualizarCardLegenda(); return; }
   box.hidden = false;
   box.innerHTML = ativos.map(cat=>{
     const pts = poisAtivos.get(cat.id);
     const qtd = poiCarregando.has(cat.id) ? '…' : (pts ? fmtN(pts.length) : '');
     return `<span class="pl-row">${svgForma(cat.forma, corDe(cat))}${cat.nome}<span class="qtd">${qtd}</span></span>`;
   }).join('');
+  atualizarCardLegenda();
 }
 
 // ============================================================ painel
+// Faixas de renda do responsável, na mesma ordem das classes E→A do mapa.
 const FAIXAS = [['f_ate1','até 1 SM'],['f_1a2','1–2'],['f_2a5','2–5'],['f_5a10','5–10'],['f_10mais','10+ SM']];
 
 // O hover troca o painel a cada setor que o mouse cruza — várias vezes por
 // segundo ao passear pelo mapa. Reconstruir essas linhas via innerHTML a
 // cada troca faz o navegador reparsear HTML e recriar nós que já existiam;
-// aqui eles são criados uma vez e só o conteúdo muda depois.
-const STAT_LABELS = ['Habitantes','Domicílios ocupados','Pessoas por domicílio','Renda média por domicílio','Densidade','Em apartamento','Domicílios vagos','0 a 14 anos','60 anos ou +'];
-const statsEl = document.getElementById('stats');
-const statNodes = STAT_LABELS.map(rotulo=>{
-  const row=document.createElement('div'); row.className='stat';
-  const k=document.createElement('span'); k.className='stat-k'; k.textContent=rotulo;
-  const v=document.createElement('span'); v.className='stat-v num';
-  row.appendChild(k); row.appendChild(v);
-  statsEl.appendChild(row);
-  return v;
+// aqui eles são criados uma vez e só o conteúdo muda depois. Três números
+// ficam em destaque; o resto vai numa lista compacta.
+const KPI_DEFS = [
+  {rotulo:'Habitantes'},
+  {rotulo:'Domicílios ocupados'},
+  {rotulo:'Renda média por domicílio', prefixo:'R$'}
+];
+const LISTA_DEFS = [
+  {rotulo:'Pessoas/domicílio'}, {rotulo:'Densidade', unidade:'hab/km²'}, {rotulo:'Apartamentos'},
+  {rotulo:'Domicílios vagos'}, {rotulo:'0 a 14 anos'}, {rotulo:'60 anos ou +'}
+];
+const kpiNodes = KPI_DEFS.map(d => {
+  const tile = document.createElement('div'); tile.className = 'kpi';
+  const k = document.createElement('span'); k.className = 'kpi-k'; k.textContent = d.rotulo;
+  const v = document.createElement('span'); v.className = 'kpi-v';
+  if(d.prefixo){ const p = document.createElement('small'); p.className = 'kpi-pre'; p.textContent = d.prefixo; v.appendChild(p); }
+  const num = document.createTextNode('—'); v.appendChild(num);
+  tile.append(k, v); document.getElementById('kpis').appendChild(tile);
+  return {tile, num};
 });
-// Rosca em SVG: um <circle> por faixa, com stroke-dasharray/dashoffset
-// calculado a cada renderReadout(). O grupo gira -90° para o primeiro
-// segmento começar às 12h e correr no sentido horário.
-const DONUT_R = 42, DONUT_C = 2*Math.PI*DONUT_R;
-const donutSegsEl = document.getElementById('donutSegs');
-const donutCenterEl = document.getElementById('donutCenter');
-const barKeyEl = document.getElementById('barKey');
-const donutNodes = FAIXAS.map(()=>{
-  const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  c.setAttribute('cx','60'); c.setAttribute('cy','60'); c.setAttribute('r', DONUT_R);
-  c.setAttribute('fill','none'); c.setAttribute('stroke-width','16');
-  c.setAttribute('stroke-dasharray', `0 ${DONUT_C}`);
-  donutSegsEl.appendChild(c);
-  return c;
+function setKpi(i, valor){
+  const n = kpiNodes[i];
+  setTxtNo(n.num, fmtKpi(valor));
+  const cheio = valor==null ? '' : NF0.format(valor);
+  if(n.tile._titulo !== cheio){ n.tile._titulo = cheio; n.tile.title = cheio; }
+}
+const statNodes = LISTA_DEFS.map(d => {
+  const row = document.createElement('div'); row.className = 'stat';
+  const dt = document.createElement('dt'); dt.textContent = d.rotulo;
+  const dd = document.createElement('dd'); dd.className = 'num';
+  const txt = document.createTextNode('—'); dd.appendChild(txt);
+  if(d.unidade){ const u = document.createElement('small'); u.textContent = d.unidade; dd.appendChild(u); }
+  row.append(dt, dd); document.getElementById('stats').appendChild(row);
+  return txt;
 });
-const barKeyNodes = FAIXAS.map(([,l])=>{
-  const s=document.createElement('span'); s.className='bk';
-  const i=document.createElement('i'); const txt=document.createTextNode('');
-  s.appendChild(i); s.appendChild(txt); barKeyEl.appendChild(s);
-  return {i, txt, label:l};
-});
+const reguaRenda = montarRegua(document.getElementById('reguaRenda'), 'painel');
 
 function renderReadout(f){
-  const escopoEl = document.getElementById('scope'), codEl = document.getElementById('scopeCode');
   let s, titulo, cod;
   if(f>=0){
     s = agregar([{f, peso:1}]); titulo = 'Setor censitário'; cod = DATA.cd[f];
@@ -1641,124 +1747,158 @@ function renderReadout(f){
   } else {
     s = AGG_TOTAL; titulo = ESCOPO; cod = fmtN(N) + ' setores';
   }
-  escopoEl.textContent = titulo; codEl.textContent = cod;
+  setTxt(document.getElementById('scope'), titulo);
+  setTxt(document.getElementById('scopeCode'), cod);
 
   const dens = s.densDireta != null ? s.densDireta
              : (s.area>0 ? Math.round(s.hab/s.area) : null);
-  const valores = [
-    fmtN(Math.round(s.hab)),
-    fmtN(Math.round(s.dom)),
+  setKpi(0, Math.round(s.hab));
+  setKpi(1, Math.round(s.dom));
+  setKpi(2, s.rendaDom==null ? null : Math.round(s.rendaDom));
+  const lista = [
     s.dom? fmt1(s.hab/s.dom) : '—',
-    s.rendaDom==null?'—':'R$ '+fmtN(Math.round(s.rendaDom)),
-    fmtN(dens)+'<small>hab/km²</small>',
+    fmtN(dens),
     s.dom? fmt1(s.apto*100/s.dom)+'%' : '—',
     (s.dom+s.vago)? fmt1(s.vago*100/(s.dom+s.vago))+'%' : '—',
     s.hab? fmt1(s.p014*100/s.hab)+'%' : '—',
     s.hab? fmt1(s.p60*100/s.hab)+'%' : '—'
   ];
-  statNodes.forEach((el,i)=>{ if(i===4) el.innerHTML = valores[i]; else el.textContent = valores[i]; });
+  statNodes.forEach((t,i) => setTxtNo(t, lista[i]));
 
-  const R = RAMPS.renda[isDark()?'d':'l'];
+  // Distribuição dos responsáveis por faixa: a mesma régua E→A da legenda,
+  // agora com a largura de cada segmento proporcional à participação.
   const vals = FAIXAS.map(([k]) => s[k]);
-  const tot = vals.reduce((a,b)=>a+(b||0),0) || 1;
-  let acumulado = 0;
-  donutNodes.forEach((c,i)=>{
-    const frac = (vals[i]||0)/tot;
-    const seg = frac*DONUT_C;
-    c.setAttribute('stroke', R[i]);
-    c.setAttribute('stroke-dasharray', `${seg} ${DONUT_C-seg}`);
-    c.setAttribute('stroke-dashoffset', String(-acumulado));
-    acumulado += seg;
+  const tem = vals.some(v => v!=null);
+  reguaRenda.host.classList.toggle('vazia', !tem);
+  renderRegua(reguaRenda, {
+    cores: RAMPS.renda[isDark()?'d':'l'],
+    pesos: tem ? vals.map(v => v||0) : [1,1,1,1,1],
+    letras: CLASSES_RENDA.map(c => c.letra),
+    valores: vals.map(v => v==null ? '—' : fmt1(v)+'%'),
+    titulos: CLASSES_RENDA.map((c,i) => `Classe ${c.letra} · ${c.rotulo}: ${vals[i]==null ? 'sem dado' : fmt1(vals[i])+'%'}`)
   });
-  if(donutCenterEl) donutCenterEl.textContent = vals.some(v=>v!=null) ? 'Renda' : '—';
-  barKeyNodes.forEach((n,i)=>{ n.i.style.background = R[i]; n.txt.data = n.label+' '+fmt1(vals[i])+'%'; });
 }
 
+// ============================================================ menu de variáveis
+// "Sem cor no mapa" é um item explícito: é o jeito de limpar o mapa, e clicar
+// na variável já ativa só a mantém (menuitemradio escolhe, não alterna).
 const varsEl = document.getElementById('vars');
-// Botão "Sem cor" fica fora do array VARS (índice -1 conceitual). Clicar
-// numa variável já ativa também desliga — a mesma ação nos dois lugares.
 let btnSemCor = null;
-const btnsVar = [];
+const btnsVar = [], reguasMenu = [];
+const itensMenu = () => [btnSemCor, ...btnsVar];
 function atualizarPressedVars(){
-  if(btnSemCor) btnSemCor.setAttribute('aria-pressed', cur ? 'false' : 'true');
-  btnsVar.forEach((b,j)=>b.setAttribute('aria-pressed', cur===VARS[j] ? 'true' : 'false'));
+  if(btnSemCor) btnSemCor.setAttribute('aria-checked', cur ? 'false' : 'true');
+  btnsVar.forEach((b,j)=>b.setAttribute('aria-checked', cur===VARS[j] ? 'true' : 'false'));
   const label = document.getElementById('varToggleLabel');
   if(label) label.textContent = cur ? cur.nome : 'Sem cor no mapa';
 }
-function fecharVarMenu(){
+function fecharVarMenu(devolverFoco){
   const menu = document.getElementById('vars'), btn = document.getElementById('varToggle');
-  if(menu) menu.hidden = true;
-  if(btn) btn.setAttribute('aria-expanded','false');
+  if(!menu || menu.hidden) return false;
+  menu.hidden = true;
+  btn.setAttribute('aria-expanded','false');
+  if(devolverFoco) btn.focus();
+  return true;
 }
 function selecionarVar(v){
-  cur = (cur === v) ? null : v;   // clicar na já ativa desliga
+  cur = v;
   classify(); pintarSwatches(); renderLegend(); atualizarPressedVars(); draw();
-  fecharVarMenu();
+  fecharVarMenu(true);
 }
 function montarVars(){
-  btnSemCor = document.createElement('button');
-  btnSemCor.className='var sem-cor'; btnSemCor.type='button'; btnSemCor.setAttribute('aria-pressed','false');
-  btnSemCor.innerHTML = '<span class="swatch swatch-off"></span>Sem cor no mapa';
-  btnSemCor.onclick = () => selecionarVar(null);
-  varsEl.appendChild(btnSemCor);
-
-  VARS.forEach((v,i)=>{
-    const b=document.createElement('button');
-    b.className='var'; b.type='button'; b.setAttribute('aria-pressed', i===0?'true':'false');
-    b.innerHTML = '<span class="swatch"></span>'+v.nome;
-    b.onclick = () => selecionarVar(v);
+  const item = aoEscolher => {
+    const b = document.createElement('button');
+    b.className = 'var'; b.type = 'button'; b.tabIndex = -1;
+    b.setAttribute('role','menuitemradio'); b.setAttribute('aria-checked','false');
+    b.onclick = aoEscolher;
     varsEl.appendChild(b);
+    return b;
+  };
+  btnSemCor = item(() => selecionarVar(null));
+  btnSemCor.classList.add('sem-cor');
+  btnSemCor.innerHTML = '<span class="swatch swatch-off" aria-hidden="true"></span><span>Sem cor no mapa</span>';
+  VARS.forEach(v => {
+    const b = item(() => selecionarVar(v));
+    const mini = document.createElement('span'); mini.setAttribute('aria-hidden','true');
+    const nome = document.createElement('span'); nome.textContent = v.nome;
+    b.append(mini, nome);
+    reguasMenu.push(montarRegua(mini, 'mini'));
     btnsVar.push(b);
   });
   atualizarPressedVars();
 }
-// Menu suspenso sobre o mapa (canto superior esquerdo): abre/fecha o mesmo
-// grupo de botões que antes ficava fixo na barra lateral.
+// Menu suspenso na barra do mapa: abre focando a variável marcada; setas,
+// Home/End navegam; Enter/Espaço escolhem e devolvem o foco; Tab fecha. O Esc
+// é do coordenador único (seção "Esc", perto do fim).
 function montarVarToggle(){
-  const btn = document.getElementById('varToggle');
-  const menu = document.getElementById('vars');
+  const btn = document.getElementById('varToggle'), menu = document.getElementById('vars');
   if(!btn || !menu) return;
-  const abrir = (v) => { menu.hidden = !v; btn.setAttribute('aria-expanded', v?'true':'false'); };
-  btn.onclick = (e) => { e.stopPropagation(); abrir(menu.hidden); };
-  document.addEventListener('click', (e) => {
-    if(!menu.hidden && e.target!==btn && !menu.contains(e.target) && !btn.contains(e.target)) abrir(false);
+  const abrir = () => {
+    menu.hidden = false; btn.setAttribute('aria-expanded','true');
+    const itens = itensMenu();
+    (itens.find(b => b.getAttribute('aria-checked')==='true') || itens[0]).focus();
+  };
+  btn.addEventListener('click', e => { e.stopPropagation(); menu.hidden ? abrir() : fecharVarMenu(false); });
+  btn.addEventListener('keydown', e => {
+    if(e.key==='ArrowDown' || e.key==='Enter' || e.key===' '){ e.preventDefault(); abrir(); }
   });
-  document.addEventListener('keydown', (e) => { if(e.key==='Escape') abrir(false); });
+  menu.addEventListener('keydown', e => {
+    const itens = itensMenu(), i = itens.indexOf(document.activeElement), n = itens.length;
+    if(e.key==='ArrowDown'){ e.preventDefault(); itens[(i+1)%n].focus(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); itens[(i-1+n)%n].focus(); }
+    else if(e.key==='Home'){ e.preventDefault(); itens[0].focus(); }
+    else if(e.key==='End'){ e.preventDefault(); itens[n-1].focus(); }
+    else if(e.key==='Tab') fecharVarMenu(false);
+  });
+  document.addEventListener('click', e => {
+    if(!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) fecharVarMenu(false);
+  });
 }
 function pintarSwatches(){
-  btnsVar.forEach((c,j)=>{
-    c.querySelector('.swatch').style.background = RAMPS[VARS[j].ramp][isDark()?'d':'l'][3];
-  });
+  const t = isDark() ? 'd' : 'l';
+  reguasMenu.forEach((rg,j) => renderRegua(rg, {cores: RAMPS[VARS[j].ramp][t]}));
 }
+
+// ============================================================ legenda do mapa
+let reguaLegenda = null;
 function renderLegend(){
-  const el = document.getElementById('legend');
-  if(!cur){
-    document.getElementById('lgTitle').textContent = 'Sem variável selecionada';
-    el.innerHTML = '';
-    return;
+  if(!reguaLegenda) reguaLegenda = montarRegua(document.getElementById('legend'), 'legenda');
+  const sec = document.getElementById('lgVar');
+  sec.hidden = !cur;
+  if(cur){
+    const fixo = !!cur.rotulosClasse;
+    setTxt(document.getElementById('lgTitle'), cur.curto + (fixo ? ' · classes' : ' · quintis'));
+    setTxt(document.getElementById('lgSub'), fixo
+      ? 'Faixas de salário mínimo (SM = R$ ' + fmtN(cortesRenda()[0]) + ') · cortes em R$'
+      : 'Cinco faixas com o mesmo número de setores · cortes em ' + cur.unidade);
+    // Classes A–E: a letra e a faixa em SM vêm fixas de CLASSES_RENDA; o valor
+    // em reais muda com a época, então continua calculado a partir dos cortes.
+    const lo=[null,...breaks], hi=[...breaks,null], titulos=[];
+    for(let i=0;i<nClasses;i++){
+      const a=lo[i], b=hi[i];
+      const faixa = a==null ? (b===0 ? cur.fmt(0) : 'até '+cur.fmt(b))
+                  : b==null ? 'acima de '+cur.fmt(a)
+                  : cur.fmt(a)+' – '+cur.fmt(b);
+      titulos.push(fixo ? `Classe ${cur.rotulosClasse[i].letra} · ${cur.rotulosClasse[i].rotulo} (${faixa}) · ${fmtN(counts[i])} setores`
+                        : `${faixa} · ${fmtN(counts[i])} setores`);
+    }
+    renderRegua(reguaLegenda, {
+      cores: ramp(), n: nClasses,
+      letras: fixo ? cur.rotulosClasse.map(c => c.letra) : null,
+      cortes: breaks.map(cur.fmtCorte),
+      contagens: counts, titulos
+    });
+    const nulos = N - counts.reduce((a,b)=>a+b, 0);
+    document.getElementById('lgNuloLinha').hidden = nulos <= 0;
+    setTxt(document.getElementById('lgNulos'), fmtN(nulos) + ' setores');
   }
-  document.getElementById('lgTitle').innerHTML = cur.curto + (cur.rotulosClasse ? ' · classes' : ' · quintis');
-  const R = ramp(); el.innerHTML='';
-  const lo=[null,...breaks], hi=[...breaks,null];
-  for(let i=0;i<nClasses;i++){
-    const a=lo[i], b=hi[i];
-    // Classes A–E: "Classe C · 2 – 5 SM (R$ 2.424 – R$ 6.060)" — a letra e a
-    // faixa em salários mínimos vêm fixas de CLASSES_RENDA; o valor em reais
-    // muda com a época, então continua calculado a partir dos cortes.
-    const lab = cur.rotulosClasse
-      ? `Classe ${cur.rotulosClasse[i].letra} · ${cur.rotulosClasse[i].rotulo} <span class="lg-sub">(${
-          a==null ? (b===0 ? cur.fmt(0) : 'até '+cur.fmt(b))
-          : b==null ? 'acima de '+cur.fmt(a)
-          : cur.fmt(a)+' – '+cur.fmt(b)
-        })</span>`
-      : a==null ? (b===0 ? cur.fmt(0) : 'até '+cur.fmt(b))
-      : b==null ? 'acima de '+cur.fmt(a)
-      : cur.fmt(a)+' – '+cur.fmt(b);
-    const row=document.createElement('div'); row.className='lg-row';
-    row.innerHTML = `<span class="lg-chip" style="background:${R[i]}"></span>`
-      + `<span class="lg-label">${lab}</span><span class="lg-n num">${fmtN(counts[i])}</span>`;
-    el.appendChild(row);
-  }
+  atualizarCardLegenda();
+  atualizarTip(hover);
+}
+// O card some quando não tem o que dizer: sem variável e sem estabelecimentos.
+function atualizarCardLegenda(){
+  const card = document.getElementById('legendaCard'), poi = document.getElementById('poiLeg');
+  if(card) card.hidden = !cur && (!poi || poi.hidden);
 }
 
 // ============================================================ busca de cidade
@@ -1789,19 +1929,21 @@ function atualizarLimparCidade(){
 
 // ============================================================ época (Censo 2022 / Projeção 2026)
 function montarEpoca(){
-  const sel = document.getElementById('epoca');
+  const grupo = document.getElementById('epoca');
   const nota = document.getElementById('epocaNota');
   const badge = document.getElementById('epocaBadge');
-  if(!sel) return;
-  sel.value = epoca;
-  sel.onchange = () => {
-    epoca = sel.value;
+  if(!grupo) return;
+  const marcado = grupo.querySelector('input[value="'+epoca+'"]');
+  if(marcado) marcado.checked = true;
+  grupo.addEventListener('change', e => {
+    if(e.target.name !== 'epoca') return;
+    epoca = e.target.value;
     if(nota) nota.hidden = epoca==='censo';
     if(badge) badge.hidden = epoca==='censo';
     AGG_TOTAL = agregar(null);
     if(cidadeAtiva) cidadeAtiva.agg = agregar(cidadeAtiva.lista);
     classify(); pintarSwatches(); renderLegend(); renderReadout(hover); draw();
-  };
+  });
 }
 function montarBusca(){
   const input = document.getElementById('busca'), lista = document.getElementById('sugestoes');
@@ -2035,6 +2177,31 @@ function atualizarHint(){
 
 // ============================================================ interação
 const tip = document.getElementById('tip');
+// Nós do tooltip criados uma vez; no hover só texto e cor mudam.
+const tipN = (() => {
+  const mk = (tag, cls, pai) => { const e = document.createElement(tag); if(cls) e.className = cls; pai.appendChild(e); return e; };
+  const linha = mk('div', 't-classe', tip);
+  const sw = mk('i', 't-sw', linha), cl = mk('span', '', linha);
+  return {linha, sw, cl, nome: mk('span', 't-k', tip), val: mk('span', 't-v', tip), base: mk('span', 't-k', tip)};
+})();
+function atualizarTip(f){
+  if(f < 0) return;
+  const c = cur ? cls[f] : -1;
+  tipN.linha.hidden = !cur;
+  tipN.nome.hidden = tipN.val.hidden = !cur;
+  if(cur){
+    // o chip repete a cor e a letra da régua da legenda para o setor sob o cursor
+    tipN.sw.classList.toggle('nulo', c < 0);
+    if(c >= 0) setCor(tipN.sw, ramp()[c]);
+    setTxt(tipN.cl, c < 0 ? 'Sem dado'
+      : cur.rotulosClasse ? `Classe ${cur.rotulosClasse[c].letra} · ${cur.rotulosClasse[c].rotulo}`
+      : `${c+1}º quintil de ${nClasses}`);
+    const v = Vp(f, cur.id);
+    setTxt(tipN.nome, cur.nome);
+    setTxt(tipN.val, v==null ? 'sem dado' : cur.fmt(v));
+  }
+  setTxt(tipN.base, `${fmtN(Vp(f,'hab'))} hab · ${fmtN(Vp(f,'dom'))} domicílios`);
+}
 let arraste = null, moveu = false;
 
 function pick(mx,my){
@@ -2074,13 +2241,8 @@ cv.addEventListener('mousemove', e=>{
   const f = pick(e.offsetX, e.offsetY);
   // Trocar o hover não pede um draw() inteiro — só a camada de cima, que é
   // um clearRect + um stroke() em vez de reclassificar e repintar tudo.
-  if(f !== hover){ hover=f; drawHover(); renderReadout(f); }
+  if(f !== hover){ hover=f; drawHover(); renderReadout(f); atualizarTip(f); }
   if(f>=0){
-    const linhaVar = cur
-      ? (()=>{ const v=Vp(f,cur.id); return `<span class="t-k">${cur.nome}</span><span class="t-v">${v==null?'sem dado':cur.fmt(v)}</span>`; })()
-      : '';
-    tip.innerHTML = linhaVar
-      + `<span class="t-k">${fmtN(Vp(f,'hab'))} hab · ${fmtN(Vp(f,'dom'))} domicílios</span>`;
     tip.classList.add('on');
     // limites da área útil já medidos: nada de getBoundingClientRect (reflow) a cada movimento
     const limD = W/dpr - INSET.r, limB = H/dpr - INSET.b;
@@ -2175,14 +2337,35 @@ function montarTema(){
 // Um "link para outra página" sem precisar de um segundo arquivo: como o
 // mapa é um HTML único (para abrir com duplo clique, sem servidor), a
 // "página" é uma sobreposição de tela cheia, com seu próprio link de volta.
+function fecharFontes(){
+  const pagina = document.getElementById('fontesPage');
+  if(!pagina || pagina.hidden) return false;
+  pagina.hidden = true;
+  document.getElementById('linkFontes')?.focus();
+  return true;
+}
 function montarFontes(){
   const link = document.getElementById('linkFontes');
   const pagina = document.getElementById('fontesPage');
   const voltar = document.getElementById('fontesVoltar');
   if(!link || !pagina) return;
-  link.onclick = (e) => { e.preventDefault(); pagina.hidden = false; pagina.scrollTop = 0; };
-  if(voltar) voltar.onclick = (e) => { e.preventDefault(); pagina.hidden = true; };
+  link.onclick = (e) => { e.preventDefault(); pagina.hidden = false; pagina.scrollTop = 0; voltar?.focus(); };
+  if(voltar) voltar.onclick = (e) => { e.preventDefault(); fecharFontes(); };
 }
+
+// ============================================================ Esc
+// Uma tecla, um passo: fecha primeiro o que está mais "por cima" — página de
+// fontes, menu de variáveis, modo de marcar ponto. A busca trata o próprio
+// Esc e marca o evento, então o coordenador não age duas vezes.
+function cancelarMarcacao(){
+  if(!aguardandoClique) return false;
+  document.getElementById('btnPonto').click();   // o mesmo caminho do botão
+  return true;
+}
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape' || e.defaultPrevented) return;
+  if(fecharFontes() || fecharVarMenu(true) || cancelarMarcacao()) e.preventDefault();
+});
 
 // ============================================================ início
 classify();
