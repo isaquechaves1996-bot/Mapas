@@ -3,49 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FFFFFF">
+<script>
+/* Resolve o tema antes do 1º paint. data-theme fica sempre 'light' ou 'dark'
+   (o CSS só conhece esses dois) e data-theme-pref guarda a escolha crua.
+   Vem antes do <link> das fontes: uma folha externa pendente atrasaria este
+   script — e, sem internet, o tema esperaria o timeout do Google Fonts.
+   Espelha aplicarTema() do app; o theme-color é o --surface de cada tema. */
+(function(r){
+  var p = null;
+  try{ p = localStorage.getItem('malha:tema'); }catch(e){}
+  if(p!=='light' && p!=='dark') p = 'system';
+  var escuro = p==='dark' || (p==='system' && !!window.matchMedia &&
+               matchMedia('(prefers-color-scheme: dark)').matches);
+  r.setAttribute('data-theme-pref', p);
+  r.setAttribute('data-theme', escuro ? 'dark' : 'light');
+  var m = document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute('content', escuro ? '#171B1F' : '#FFFFFF');
+})(document.documentElement);
+</script>
 <title>Malha Censitária · Região Sul</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
+  color-scheme:light;
+  /* fundação — não varia com o tema */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
+  --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-md:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:28px;
+  --lh-tight:1.2; --lh-base:1.5; --lh-relaxed:1.65;
+  --font-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono","SF Mono",ui-monospace,monospace;
+  --alvo-min:32px; --dur-tema:.2s;
+
+  /* cor — tema claro */
   --ground:#EEF0F2; --surface:#FFFFFF; --surface-2:#F5F7F8; --surface-3:#E9ECEF;
-  --ink:#12171B; --ink-2:#414D57; --ink-3:#727E88;
+  --ink:#12171B; --ink-2:#414D57; --ink-3:#5C6873;
   --line:#D5DAE0; --line-2:#E4E8EC;
   --accent:#1B5D58; --accent-soft:#DCEBE9; --accent-ink:#0F3F3B;
+  --danger:#B03A26; --seg-thumb:#FFFFFF;
   --map-bg:#E4E7EA; --map-stroke:#EEF0F2; --map-null:#C9CED4;
   --map-label:#1B2228; --map-halo:rgba(255,255,255,.92);
   --raio:#B03A26; --raio-fill:rgba(176,58,38,.10);
   --ct-mun:rgba(20,30,40,.75); --ct-bairro:rgba(70,80,90,.4);
   --focus:#1B5D58;
+  --scrim:rgba(238,240,242,.9);
+  --shadow-sm:0 1px 2px rgba(16,24,32,.08);
+  --shadow-md:0 1px 2px rgba(16,24,32,.06), 0 6px 16px rgba(16,24,32,.10);
+  --shadow-lg:0 2px 4px rgba(16,24,32,.06), 0 12px 32px rgba(16,24,32,.14);
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --ground:#0E1114; --surface:#171B1F; --surface-2:#1D2226; --surface-3:#252B31;
-    --ink:#E6EAEE; --ink-2:#9AA4AD; --ink-3:#6E7880;
-    --line:#2A3138; --line-2:#222930;
-    --accent:#5FBDB2; --accent-soft:#16302E; --accent-ink:#8FD6CC;
-    --map-bg:#131719; --map-stroke:#0E1114; --map-null:#2C3339;
-    --map-label:#EDF1F4; --map-halo:rgba(10,13,15,.9);
-    --raio:#E5876F; --raio-fill:rgba(229,135,111,.12);
-    --ct-mun:rgba(230,235,240,.75); --ct-bairro:rgba(160,170,180,.4);
-    --focus:#5FBDB2;
-  }
-}
+/* Tema escuro: um bloco só. O <head> sempre grava data-theme resolvido
+   (inclusive quando a escolha é "Sistema"), então não há media query aqui. */
 :root[data-theme="dark"]{
+  color-scheme:dark;
   --ground:#0E1114; --surface:#171B1F; --surface-2:#1D2226; --surface-3:#252B31;
-  --ink:#E6EAEE; --ink-2:#9AA4AD; --ink-3:#6E7880;
+  --ink:#E6EAEE; --ink-2:#A6B0B8; --ink-3:#8A949C;
   --line:#2A3138; --line-2:#222930;
   --accent:#5FBDB2; --accent-soft:#16302E; --accent-ink:#8FD6CC;
+  --danger:#E5876F; --seg-thumb:#343C44;
   --map-bg:#131719; --map-stroke:#0E1114; --map-null:#2C3339;
   --map-label:#EDF1F4; --map-halo:rgba(10,13,15,.9);
   --raio:#E5876F; --raio-fill:rgba(229,135,111,.12);
   --ct-mun:rgba(230,235,240,.75); --ct-bairro:rgba(160,170,180,.4);
   --focus:#5FBDB2;
+  --scrim:rgba(19,23,25,.9);
+  /* sombra preta some no fundo escuro: anel escuro + brilho interno de 1px */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+  --shadow-md:0 0 0 1px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  --shadow-lg:0 0 0 1px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);
-  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-family:var(--font-sans);
   font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.num{font-family:"IBM Plex Mono","SF Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+/* ícones: sprite SVG inline no início do <body>, traço herdando a cor do texto */
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.ico{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ico-sm{width:16px;height:16px}
+.sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;border:0;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .app{display:grid;grid-template-columns:344px 1fr;height:100vh;height:100dvh;gap:1px;background:var(--line)}
 @media (max-width:880px){.app{grid-template-columns:1fr;grid-template-rows:auto 62vh;height:auto}}
@@ -56,7 +94,23 @@ canvas{display:block;width:100%;height:100%;cursor:crosshair}
 canvas.marcando{cursor:cell}
 #cvHover{position:absolute;inset:0;pointer-events:none;cursor:inherit}
 
-.head{padding:18px 20px 14px;border-bottom:1px solid var(--line-2)}
+.head{padding:14px 20px 14px;border-bottom:1px solid var(--line-2)}
+.head-top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-2)}
+.head-top .eyebrow{margin:0}
+
+/* controle segmentado sobre radios nativos: setas, um só ponto de Tab e o
+   anúncio "1 de 3" vêm do próprio navegador, sem código de teclado */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;margin:0;padding:2px;
+  min-inline-size:0;border:0;background:var(--surface-3);border-radius:var(--r-md)}
+.seg label{position:relative;display:block}
+.seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.seg-opt{display:grid;place-items:center;min-height:calc(var(--alvo-min) - 4px);padding:0 var(--sp-2);
+  border-radius:calc(var(--r-md) - 2px);color:var(--ink-3);font-size:var(--fs-xs);font-weight:500}
+.seg input:hover + .seg-opt{color:var(--ink)}
+.seg input:checked + .seg-opt{background:var(--seg-thumb);color:var(--ink);box-shadow:var(--shadow-sm)}
+.seg input:focus-visible + .seg-opt{outline:2px solid var(--focus);outline-offset:1px}
+.seg.tema{flex:none;grid-auto-columns:30px}
+.seg.tema .seg-opt{padding:0}
 .eyebrow{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin:0 0 6px}
 h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.015em;line-height:1.2}
 .sub{margin:6px 0 0;font-size:12px;color:var(--ink-2)}
@@ -81,7 +135,7 @@ h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.015em;line-height:1.
 .busca input::placeholder{color:var(--ink-3)}
 .sugestoes{position:absolute;top:100%;left:0;right:0;z-index:20;background:var(--surface);
   border:1px solid var(--line);border-radius:3px;margin-top:2px;max-height:250px;overflow-y:auto;
-  box-shadow:0 6px 18px rgba(0,0,0,.14)}
+  box-shadow:var(--shadow-lg)}
 .sugestoes:empty{display:none}
 .sug{padding:6px 10px;cursor:pointer;font-size:12.5px;display:flex;justify-content:space-between;gap:8px}
 .sug:hover,.sug.sel{background:var(--accent-soft)}
@@ -175,7 +229,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
 .fontesPage b{color:var(--ink);font-weight:500}
 
 .tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);
-  border-radius:4px;padding:7px 9px;font-size:11.5px;box-shadow:0 4px 14px rgba(0,0,0,.14);
+  border-radius:4px;padding:7px 9px;font-size:11.5px;box-shadow:var(--shadow-md);
   opacity:0;transition:opacity .1s;max-width:230px;z-index:5}
 .tip.on{opacity:1}
 .tip .t-v{font-weight:600;font-size:13px;display:block}
@@ -196,20 +250,20 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
 .varctl{position:absolute;top:12px;left:12px;z-index:7}
 .varctl-btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);
   font:inherit;font-size:12.5px;padding:7px 10px;border-radius:4px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.12);max-width:220px}
+  display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md);max-width:220px}
 .varctl-btn:hover{background:var(--surface-2)}
 .varctl-btn:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .varctl-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .varctl-chev{color:var(--ink-3);font-size:10px;flex:none}
 .varctl-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:230px;background:var(--surface);
-  border:1px solid var(--line);border-radius:4px;box-shadow:0 8px 22px rgba(0,0,0,.16);
+  border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow-lg);
   display:flex;flex-direction:column;gap:1px;padding:2px;overflow:hidden}
 .varctl-menu[hidden]{display:none!important}
 .varctl-menu .var{border-radius:2px}
 
 /* legenda de estabelecimentos, sobre o mapa, canto superior direito */
 .poiLeg{position:absolute;top:48px;right:12px;background:var(--surface);border:1px solid var(--line);
-  border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.12);padding:8px 10px;
+  border-radius:4px;box-shadow:var(--shadow-md);padding:8px 10px;
   display:flex;flex-direction:column;gap:5px;font-size:11.5px;z-index:6;max-width:190px}
 .poiLeg[hidden]{display:none!important}
 .pl-row{display:flex;align-items:center;gap:7px;color:var(--ink-2)}
@@ -223,7 +277,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
 /* caixa de endereço sobre o mapa, canto superior central */
 .endereco{position:absolute;top:12px;left:50%;transform:translateX(-50%);
   display:flex;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:4px;
-  box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:6;width:min(460px,calc(100% - 96px))}
+  box-shadow:var(--shadow-md);z-index:6;width:min(460px,calc(100% - 96px))}
 .endereco input{flex:1;min-width:0;font:inherit;font-size:12.5px;padding:7px 12px;border:0;
   background:transparent;color:var(--ink);border-radius:4px 0 0 4px}
 .endereco input:focus{outline:2px solid var(--focus);outline-offset:-2px}
@@ -237,28 +291,50 @@ input[type=range]{flex:1;accent-color:var(--accent);height:18px}
   color:var(--ink-2);background:var(--surface);border:1px solid var(--line-2);
   padding:5px 9px;border-radius:3px;display:none}
 .end-status.on{display:block}
-.end-status.erro{color:var(--raio);border-color:var(--raio)}
+.end-status.erro{color:var(--danger);border-color:var(--danger)}
 
 /* bloqueio do mapa até a cidade ser escolhida */
 .bloqueio[hidden]{display:none!important}
-.bloqueio{position:absolute;inset:0;background:rgba(238,240,242,.9);backdrop-filter:blur(3px);
+.bloqueio{position:absolute;inset:0;background:var(--scrim);backdrop-filter:blur(3px);
   z-index:8;display:flex;align-items:center;justify-content:center;padding:24px}
-:root[data-theme="dark"] .bloqueio,
-:root:not([data-theme="light"]) .bloqueio{background:rgba(19,23,25,.9)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .bloqueio{background:rgba(238,240,242,.9)}}
 .bloqueio-inner{max-width:420px;text-align:center}
 .bloqueio-t{font-size:16px;font-weight:600;margin:0 0 8px;color:var(--ink)}
 .bloqueio-s{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
 
+/* troca de tema: as cores do painel deslizam ~200ms. Nada anima no load (a
+   classe só existe durante a troca) e o canvas troca na hora. */
+@media (prefers-reduced-motion:no-preference){
+  :root.tema-trocando, :root.tema-trocando *, :root.tema-trocando *::before, :root.tema-trocando *::after{
+    transition:background-color var(--dur-tema), border-color var(--dur-tema), color var(--dur-tema),
+               fill var(--dur-tema), stroke var(--dur-tema), box-shadow var(--dur-tema) !important}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-monitor" viewBox="0 0 20 20"><rect x="2.75" y="3.5" width="14.5" height="10" rx="1.5"/><path d="M7 16.5h6M10 13.5v3"/></symbol>
+  <symbol id="i-sol" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.25"/><path d="M10 2.25V4M10 16v1.75M2.25 10H4M16 10h1.75M4.52 4.52l1.24 1.24M14.24 14.24l1.24 1.24M4.52 15.48l1.24-1.24M14.24 5.76l1.24-1.24"/></symbol>
+  <symbol id="i-lua" viewBox="0 0 20 20"><path d="M16.25 12.4A6.5 6.5 0 0 1 7.6 3.75a6.5 6.5 0 1 0 8.65 8.65Z"/></symbol>
+</svg><!-- /sprite -->
 
 <div class="app">
   <aside class="panel">
     <div class="head">
-      <p class="eyebrow">Censo 2022 · IBGE</p>
+      <div class="head-top">
+        <p class="eyebrow">Censo 2022 · IBGE</p>
+        <fieldset class="seg tema" id="tema">
+          <legend class="sr-only">Tema de cores</legend>
+          <label title="Seguir o sistema"><input type="radio" name="tema" value="system" autocomplete="off"><span class="seg-opt"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-monitor"/></svg><span class="sr-only">Sistema</span></span></label>
+          <label title="Tema claro"><input type="radio" name="tema" value="light" autocomplete="off"><span class="seg-opt"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-sol"/></svg><span class="sr-only">Claro</span></span></label>
+          <label title="Tema escuro"><input type="radio" name="tema" value="dark" autocomplete="off"><span class="seg-opt"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-lua"/></svg><span class="sr-only">Escuro</span></span></label>
+        </fieldset>
+        <script>
+        /* marca o radio da preferência ainda no parse, muito antes do app carregar */
+        (function(){ var p = document.documentElement.getAttribute('data-theme-pref') || 'system';
+          var i = document.querySelector('#tema input[value="' + p + '"]'); if(i) i.checked = true; })();
+        </script>
+      </div>
       <h1>Malha Censitária · Região Sul</h1>
       <p class="sub">65.170 setores censitários. Busque a cidade, passe o cursor sobre um setor ou marque um ponto para analisar um raio.</p>
     </div>
@@ -628,13 +704,12 @@ const VARS = [
 ];
 let cur = VARS[0];
 
-const isDark = () => {
-  const t = document.documentElement.getAttribute('data-theme');
-  if(t==='dark') return true; if(t==='light') return false;
-  return matchMedia('(prefers-color-scheme: dark)').matches;
-};
+// O <head> resolve o tema antes do 1º paint e aplicarTema() mantém o atributo
+// em dia, então data-theme é sempre 'light' ou 'dark' — sem media query aqui,
+// que faria o canvas discordar do CSS.
+const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
 // getComputedStyle é caro e essas cores não mudam quadro a quadro — só quando
-// o tema muda. Lê-se uma vez (e de novo no evento de troca de tema) em vez de
+// o tema muda. Lê-se uma vez (e de novo em aplicarTema()) em vez de
 // em cada draw()/drawLabels()/drawPonto().
 const CSSV = {};
 const CSSV_CHAVES = ['--map-null','--map-bg','--ink','--raio-fill','--raio','--surface','--map-halo','--map-label','--ct-mun','--ct-bairro'];
@@ -741,16 +816,18 @@ let basemapOn = true;
 const tileCache = new Map();
 let redesenhoAgendado = 0;
 
-function urlTile(camada,z,x,y){
+function urlTile(camada,z,x,y,tema){
   const modelo = (typeof TILE_TEMPLATE !== 'undefined') ? TILE_TEMPLATE : BASEMAPS[basemapEstilo].urls[camada];
-  return modelo.replace('{tema}', isDark()?'Dark':'Light').replace('{camada}', camada)
+  return modelo.replace('{tema}', tema).replace('{camada}', camada)
                .replace('{z}',z).replace('{x}',x).replace('{y}',y);
 }
-function getTile(camada,z,x,y){
-  // O estilo entra na chave: trocar de Ruas para Neutro não reaproveita
-  // tile do outro (são fontes diferentes), então cada um tem seu próprio
-  // espaço no cache — sem isso um alternaria limpando o do outro.
-  const chave = basemapEstilo+'/'+camada+z+'/'+x+'/'+y;
+// 2 temas × 2 camadas × o teto de 300 tiles por camada de drawTiles: cabe a
+// tela inteira dos dois temas, então voltar ao tema anterior não baixa de novo.
+const TILE_CACHE_MAX = 2*2*300;
+function getTile(camada,z,x,y,tema){
+  // Estilo e tema entram na chave: tile claro e escuro são imagens diferentes,
+  // e cada um guarda seu lugar no cache em vez de um limpar o do outro.
+  const chave = basemapEstilo+'/'+tema+'/'+camada+'/'+z+'/'+x+'/'+y;
   if(tileCache.has(chave)){
     // tocar a chave manda ela para o fim do Map (ordem de inserção), o que é
     // o suficiente para um LRU de verdade: o candidato a descarte é sempre o
@@ -761,11 +838,11 @@ function getTile(camada,z,x,y){
     return img;
   }
   const img = new Image();
-  img.src = urlTile(camada,z,x,y);
+  img.src = urlTile(camada,z,x,y,tema);
   img.onload  = () => { cancelAnimationFrame(redesenhoAgendado); redesenhoAgendado = requestAnimationFrame(draw); };
   img.onerror = () => tileCache.set(chave, null);
   tileCache.set(chave, img);
-  if(tileCache.size > 900) tileCache.delete(tileCache.keys().next().value);
+  if(tileCache.size > TILE_CACHE_MAX) tileCache.delete(tileCache.keys().next().value);
   return img;
 }
 // A camada de referência (nomes) segue as ruas: o próprio corte de "número
@@ -784,9 +861,10 @@ function drawTiles(camada){
   // saturação e contraste ajuda a rua a se separar do fundo cinza — sobra
   // mais leitura de mapa mesmo com o setor por cima.
   ctx.filter = 'saturate(1.5) contrast(1.15)';
+  const tema = isDark() ? 'Dark' : 'Light';   // uma vez por camada: chave e URL do tile batem
   for(let i=i0;i<=i1;i++) for(let j=j0;j<=j1;j++){
     if(i<0||j<0||i>=n||j>=n) continue;
-    const img = getTile(camada,z,i,j);
+    const img = getTile(camada,z,i,j,tema);
     if(!img || !img.complete || !img.naturalWidth) continue;
     ctx.drawImage(img, (i*passo-180)*scale+tx, (j*passo-180)*scale+ty, lado+0.6, lado+0.6);
   }
@@ -946,7 +1024,7 @@ function draw(){
   // fundo — poupa a passagem pelos setores todos, que é o caminho lento.
   if(typeof mapaLiberado !== 'undefined' && !mapaLiberado){
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.fillStyle = cssv('--map-bg') || '#E4E7EA'; ctx.fillRect(0,0,W/dpr,H/dpr);
+    ctx.fillStyle = cssv('--map-bg'); ctx.fillRect(0,0,W/dpr,H/dpr);
     return;
   }
   const nullc = cssv('--map-null');
@@ -1069,7 +1147,7 @@ function drawContornos(){
   if(!CONT_MUN) return;
   if(scale < 20) return;   // muito longe: contorno vira ruído
   ctx.lineJoin='round'; ctx.lineCap='round';
-  ctx.strokeStyle = cssv('--ct-mun') || 'rgba(20,30,40,.85)';
+  ctx.strokeStyle = cssv('--ct-mun');
   ctx.lineWidth = 1.6/scale;
   ctx.beginPath();
   for(let r=0;r<CONT_MUN.n;r++){
@@ -1838,9 +1916,55 @@ btnMapa.onclick = () => {
 };
 
 addEventListener('resize', resize);
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
-  tileCache.clear(); atualizarCSSV(); pintarSwatches(); renderLegend(); renderPois(); renderReadout(hover); draw();
-});
+
+// ============================================================ tema
+// O <head> já resolveu o tema antes do 1º paint: data-theme é sempre
+// 'light'|'dark' e data-theme-pref guarda a escolha crua. Toda troca depois
+// disso (o controle no painel, o sistema, outra aba) passa por aplicarTema(),
+// a única cadeia que repinta o que o CSS não alcança: o cache de cores do
+// canvas, as amostras, a legenda, os POIs, a leitura e o próprio mapa.
+const TEMA_CHAVE = 'malha:tema';
+const raiz = document.documentElement;
+const mqEscuro = matchMedia('(prefers-color-scheme: dark)');
+const mqSemMov = matchMedia('(prefers-reduced-motion: reduce)');
+const metaTema = document.querySelector('meta[name="theme-color"]');
+const normPref = p => (p==='light' || p==='dark') ? p : 'system';
+const resolverTema = p => (p==='dark' || (p==='system' && mqEscuro.matches)) ? 'dark' : 'light';
+let temaPref = normPref(raiz.getAttribute('data-theme-pref'));
+if(!raiz.hasAttribute('data-theme')) raiz.setAttribute('data-theme', resolverTema(temaPref));   // head falhou
+let fimTransicao = 0;
+
+function aplicarTema(pref, {salvar=false, animar=false} = {}){
+  temaPref = normPref(pref);
+  if(salvar){ try{ temaPref==='system' ? localStorage.removeItem(TEMA_CHAVE)
+                                       : localStorage.setItem(TEMA_CHAVE, temaPref); }catch(e){} }
+  raiz.setAttribute('data-theme-pref', temaPref);
+  for(const i of document.querySelectorAll('#tema input[name="tema"]')) i.checked = (i.value===temaPref);
+  const tema = resolverTema(temaPref);
+  if(raiz.getAttribute('data-theme') === tema) return;      // só a preferência mudou
+  if(animar && !mqSemMov.matches){
+    raiz.classList.add('tema-trocando');
+    clearTimeout(fimTransicao);
+    fimTransicao = setTimeout(() => raiz.classList.remove('tema-trocando'), 260);
+  }
+  raiz.setAttribute('data-theme', tema);
+  atualizarCSSV();                                          // cores do tema novo, lidas já no valor final
+  if(metaTema) metaTema.setAttribute('content', CSSV['--surface']);
+  pintarSwatches(); renderLegend(); renderPois(); renderReadout(hover); draw();
+}
+function montarTema(){
+  const grupo = document.getElementById('tema');
+  if(grupo) grupo.addEventListener('change', e => {
+    if(e.target.name==='tema') aplicarTema(e.target.value, {salvar:true, animar:true});
+  });
+  mqEscuro.addEventListener('change', () => { if(temaPref==='system') aplicarTema('system', {animar:true}); });
+  addEventListener('storage', e => { if(e.key===TEMA_CHAVE) aplicarTema(e.newValue, {animar:true}); });
+  // Um clique no controle enquanto os 17 MB ainda carregavam mudou o radio sem
+  // ninguém ouvindo: vale a escolha da pessoa, não a lida no <head>.
+  const marcado = document.querySelector('#tema input:checked');
+  if(marcado && marcado.value !== temaPref) aplicarTema(marcado.value, {salvar:true});
+  else aplicarTema(temaPref);
+}
 
 // ============================================================ página de fontes
 // Um "link para outra página" sem precisar de um segundo arquivo: como o
@@ -1863,6 +1987,7 @@ montarVars(); pintarSwatches(); renderLegend(); montarBusca(); montarRaio(); ren
 montarVarToggle(); montarFontes();
 renderReadout(-1);
 resize();
+montarTema();
 })();
 
 </script>
