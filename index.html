@@ -148,10 +148,6 @@ h1{margin:0;font-size:var(--fs-lg);font-weight:600;letter-spacing:-.01em;line-he
 .seg.tema .seg-opt{padding:0}
 
 /* ---------------------------------------------------------------- campos e botões */
-.poi-drop select{width:100%;height:var(--alvo);font:inherit;font-size:var(--fs-sm);padding:0 var(--sp-3);
-  border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface-2);color:var(--ink);cursor:pointer}
-.poi-drop select:hover{border-color:var(--ink-3)}
-.poi-drop select:disabled{cursor:not-allowed;opacity:.55}
 .epoca-nota{font-size:var(--fs-2xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45}
 .btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);
   min-height:var(--alvo);padding:0 var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);
@@ -338,7 +334,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .legenda-card{pointer-events:auto;flex:0 1 340px;width:min(340px,100%);container:legenda / inline-size;max-height:55dvh;overflow:auto;padding:var(--sp-3) var(--sp-4);
   display:flex;flex-direction:column;gap:var(--sp-3);background:var(--surface);
   border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-md)}
-.app.bloqueado .legenda-card,.app.bloqueado .hint{display:none}
+.app.bloqueado .legenda-card{display:none}
 .lg-cab{margin-bottom:var(--sp-3)}
 .lg-titulo{margin:0;font-size:var(--fs-sm);font-weight:600}
 .lg-sub{margin:2px 0 0;font-size:var(--fs-2xs);line-height:1.35;color:var(--ink-3)}
@@ -350,7 +346,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .pl-row svg{display:block;flex:none}
 .pl-row .qtd{margin-left:auto;color:var(--ink-3);font-size:var(--fs-2xs);font-variant-numeric:tabular-nums}
 .map-rodape-dir{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:var(--sp-1)}
-.hint,.attrib{pointer-events:auto;font-size:var(--fs-2xs);color:var(--ink-3);border:1px solid var(--line-2);
+.attrib{pointer-events:auto;font-size:var(--fs-2xs);color:var(--ink-3);border:1px solid var(--line-2);
   background:color-mix(in srgb,var(--surface) 90%,transparent);padding:2px var(--sp-2);border-radius:var(--r-sm)}
 
 /* ---------------------------------------------------------------- tooltip */
@@ -1594,6 +1590,10 @@ function chavePoi(cat, area){
 async function consultarOverpass(q){
   const lista = (typeof OVERPASS_URL !== 'undefined') ? [OVERPASS_URL] : OVERPASS_LISTA;
   const ctrl = new AbortController();
+  // Um espelho que não responde (nem erra) prenderia o Promise.any para sempre
+  // e o chip ficaria girando: passado o orçamento, desiste de todos de uma vez.
+  let estourou = false;
+  const prazo = setTimeout(() => { estourou = true; ctrl.abort(); }, 25000);
   const erros = [];
   const tentativas = lista.map(url =>
     fetch(url, {method:'POST', body:'data='+encodeURIComponent(q),
@@ -1607,7 +1607,9 @@ async function consultarOverpass(q){
     return j;
   }catch(err){
     ctrl.abort();
-    throw new Error(erros[erros.length-1] || (err && err.message) || 'falha desconhecida');
+    throw new Error(estourou ? 'sem resposta em 25 s' : (erros[erros.length-1] || (err && err.message) || 'falha desconhecida'));
+  }finally{
+    clearTimeout(prazo);
   }
 }
 async function carregarPoi(cat){
@@ -2343,8 +2345,10 @@ function posicionarTip(x, y){
   // limites da área útil já medidos: nada de getBoundingClientRect a cada movimento
   const limD = W/dpr - INSET.r, limB = H/dpr - INSET.b;
   let L = x+14, T = y+14;
-  if(L+240 > limD) L = x-240;
+  if(L+240 > limD) L = x-254;
   if(T+92 > limB) T = y-92;
+  // no celular o setor tocado pode ficar no meio: nunca deixar o tooltip sair pela borda
+  L = Math.max(INSET.l, Math.min(L, limD-240));
   tip.style.left = L+'px'; tip.style.top = Math.max(INSET.t, T)+'px';
 }
 function hoverEm(x, y){
