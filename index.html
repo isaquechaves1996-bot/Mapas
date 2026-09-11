@@ -97,7 +97,8 @@ body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-s
 @media (pointer:coarse){.app{--alvo:calc(var(--alvo-min) + var(--sp-2))}}
 
 .map-wrap{position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--map-bg)}
-#cv{display:block;width:100%;height:100%;cursor:crosshair}
+#cv{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+#cv.arrastando{cursor:grabbing}
 #cv.marcando{cursor:cell}
 #cvHover{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .map-ui{position:absolute;z-index:2;top:var(--ui-t);right:var(--ui-r);bottom:var(--ui-b);left:var(--ui-l);
@@ -109,7 +110,19 @@ body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-s
   display:flex;flex-direction:column;background:var(--surface);
   border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);
   scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+/* recolher o painel (desktop): ele desliza para fora e um botão fica no canto */
+.panel{transition:transform .22s ease, visibility 0s linear 0s}
+.app.painel-recolhido{--ui-l:calc(2*var(--gap) + var(--alvo))}
+.app.painel-recolhido .panel{transform:translateX(calc(-100% - 2*var(--gap)));visibility:hidden;
+  transition:transform .22s ease, visibility 0s linear .22s}
+.painel-mostrar{position:absolute;z-index:10;top:var(--gap);left:var(--gap);width:var(--alvo);height:var(--alvo);
+  display:grid;place-items:center;padding:0;background:var(--surface);color:var(--ink-2);cursor:pointer;
+  border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow-md)}
+.painel-mostrar:hover{background:var(--surface-2);color:var(--ink)}
+.painel-mostrar .ico{transform:scaleX(-1)}
+.sheet-alca{display:none}
 .head{padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--line-2)}
+.head-acoes{display:flex;align-items:center;gap:var(--sp-1)}
 .head-top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-2)}
 .eyebrow,.block-title,.sug-grupo{font-family:var(--font-cond);font-size:var(--fs-2xs);font-weight:500;
   letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
@@ -159,16 +172,23 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .raio-val{font-size:var(--fs-sm);font-weight:600;min-width:56px;text-align:right}
 .raio-hint{font-size:var(--fs-xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45}
 
-/* ---------------------------------------------------------------- estabelecimentos */
-.poi-chips{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-2)}
-.poi-chips:empty{margin-top:0}
-.poi-chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 3px 0 var(--sp-3);font-size:var(--fs-xs);
-  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);color:var(--ink);border-radius:var(--r-pill)}
-.poi-chip svg{display:block;flex:none}
-.poi-chip .qtd{font-size:var(--fs-2xs);color:var(--ink-3);font-variant-numeric:tabular-nums}
-.poi-chip .x{appearance:none;border:0;background:transparent;color:var(--ink-2);cursor:pointer;
-  padding:0;width:22px;height:22px;display:grid;place-items:center;border-radius:50%}
-.poi-chip .x:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink)}
+/* ---------------------------------------------------------------- estabelecimentos: seis chips que ligam e desligam */
+.poi-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+.poi-tg{appearance:none;display:flex;align-items:center;gap:var(--sp-2);min-width:0;min-height:var(--alvo);
+  padding:0 var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);
+  color:var(--ink-2);font:inherit;font-size:var(--fs-xs);font-weight:500;text-align:left;cursor:pointer}
+.poi-tg:hover{background:var(--surface-2);color:var(--ink)}
+.poi-tg[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.poi-tg:disabled{opacity:.5;cursor:not-allowed;background:var(--surface)}
+.poi-ico{display:grid;place-items:center;flex:none}
+.poi-ico svg{display:block}
+.poi-tg .nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.poi-tg .qtd{flex:none;font-family:var(--font-mono);font-size:var(--fs-2xs);color:var(--ink-3)}
+.poi-tg[aria-busy="true"] .qtd{width:10px;height:10px;font-size:0;border:1.5px solid var(--line);
+  border-top-color:var(--accent);border-radius:50%;animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.poi-tg[aria-busy="true"] .qtd{animation:none}}
 .poi-status{font-size:var(--fs-xs);color:var(--ink-3);margin:var(--sp-2) 0 0;line-height:1.45;min-height:1em}
 
 /* ---------------------------------------------------------------- leitura: escopo, KPIs, distribuição, lista */
@@ -287,7 +307,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .tb-btn:hover{background:var(--surface-2);color:var(--ink)}
 .tb-btn[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);
   border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
-@container (max-width:560px){
+@container (max-width:600px){
   /* barra estreita: a busca ganha a linha de cima inteira */
   .toolbar{flex-wrap:wrap}
   .busca{order:-1;flex-basis:100%;max-width:none}
@@ -295,6 +315,23 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
   .varctl-btn{max-width:170px}
   .legenda-card{max-height:30dvh}
 }
+@media (pointer:coarse){
+  /* no toque o zoom é de pinça: fica só o enquadrar */
+  @container (max-width:600px){ #zin,#zout{display:none} #zrst{border-left:0} }
+}
+
+/* ---------------------------------------------------------------- aviso sobre o mapa (marcar ponto, dica de navegação) */
+.map-pill{pointer-events:auto;align-self:center;display:inline-flex;align-items:center;gap:var(--sp-2);
+  min-height:var(--alvo);max-width:100%;padding:0 var(--sp-3);background:var(--surface);color:var(--ink-2);
+  border:1px solid var(--line);border-radius:var(--r-pill);box-shadow:var(--shadow-md);font-size:var(--fs-xs)}
+.map-pill .ico{color:var(--ink-3)}
+.map-pill[data-tipo="marcar"]{color:var(--ink);border-color:var(--accent);padding-right:var(--sp-1)}
+.map-pill[data-tipo="marcar"] .ico{color:var(--accent)}
+.map-pill[data-tipo="marcar"]:not(:has(.pill-btn:not([hidden]))){padding-right:var(--sp-3)}
+.pill-btn{appearance:none;border:0;min-height:calc(var(--alvo) - 8px);padding:0 var(--sp-3);border-radius:var(--r-pill);
+  background:var(--surface-2);color:var(--ink);font:inherit;font-size:var(--fs-xs);font-weight:500;cursor:pointer}
+.pill-btn:hover{background:var(--surface-3)}
+.app.bloqueado .map-pill{display:none}
 
 /* ---------------------------------------------------------------- rodapé do mapa: legenda + créditos */
 .map-rodape{margin-top:auto;display:flex;flex-wrap:wrap-reverse;align-items:flex-end;justify-content:space-between;gap:var(--sp-2);pointer-events:none}
@@ -346,11 +383,26 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 .fontesPage p{margin:0 0 var(--sp-4);font-size:var(--fs-md);color:var(--ink-2);line-height:var(--lh-relaxed)}
 .fontesPage b{color:var(--ink);font-weight:600}
 
-/* ---------------------------------------------------------------- telas estreitas (provisório: o bottom sheet vem na fase D) */
+/* ---------------------------------------------------------------- celular: painel vira bottom sheet
+   Recolhido, mostra só a alça e a leitura (escopo + KPIs); expandido, ~78% da
+   altura. A área útil do mapa termina acima do peek, então enquadrar
+   centraliza no que está visível. */
 @media (max-width:880px){
-  .app{--gap:var(--sp-2);--panel-h:46dvh;--ui-l:var(--gap);--ui-b:calc(var(--panel-h) + var(--gap))}
-  .panel{top:auto;left:0;right:0;bottom:0;width:auto;max-height:var(--panel-h);
-    border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom:0}
+  .app{--gap:var(--sp-2);--peek-h:calc(172px + env(safe-area-inset-bottom));
+    --ui-l:var(--gap);--ui-b:calc(var(--peek-h) + var(--gap))}
+  .app.painel-recolhido{--ui-l:var(--gap)}
+  .panel,.app.painel-recolhido .panel{top:auto;left:0;right:0;bottom:0;width:auto;height:78dvh;max-height:none;
+    visibility:visible;overflow:hidden;border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom:0;
+    padding-bottom:env(safe-area-inset-bottom);transform:translateY(calc(78dvh - var(--peek-h)));transition:transform .24s ease}
+  .panel.aberto{transform:none;overflow-y:auto}
+  .panel.arrastando{transition:none}
+  .sheet-alca{display:block;order:-2;position:sticky;top:0;z-index:1;flex:none;width:100%;height:24px;margin:0;padding:0;
+    border:0;background:var(--surface);cursor:grab;touch-action:none}
+  .sheet-alca::before{content:'';position:absolute;left:50%;top:9px;width:36px;height:4px;border-radius:2px;
+    background:var(--line);translate:-50% 0}
+  .panel > .leitura{order:-1;padding-top:var(--sp-1)}
+  .head .sub{display:none}
+  #btnRecolher,.painel-mostrar{display:none!important}
 }
 
 /* troca de tema: as cores do painel deslizam ~200ms. Nada anima no load (a
@@ -384,9 +436,11 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 
 <div class="app bloqueado" id="app">
   <aside class="panel" id="panel" aria-label="Painel de dados">
+    <button class="sheet-alca" id="sheetAlca" type="button" aria-controls="panel" aria-expanded="false"><span class="sr-only">Expandir painel</span></button>
     <div class="head">
       <div class="head-top">
         <p class="eyebrow">Censo 2022 · IBGE</p>
+        <div class="head-acoes">
         <fieldset class="seg tema" id="tema">
           <legend class="sr-only">Tema de cores</legend>
           <label title="Seguir o sistema"><input type="radio" name="tema" value="system" autocomplete="off"><span class="seg-opt"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-monitor"/></svg><span class="sr-only">Sistema</span></span></label>
@@ -398,6 +452,8 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
         (function(){ var p = document.documentElement.getAttribute('data-theme-pref') || 'system';
           var i = document.querySelector('#tema input[value="' + p + '"]'); if(i) i.checked = true; })();
         </script>
+        <button class="icon-btn" id="btnRecolher" type="button" aria-controls="panel" aria-expanded="true" aria-label="Recolher painel" title="Recolher painel"><svg class="ico" aria-hidden="true"><use href="#i-recolher"/></svg></button>
+        </div>
       </div>
       <h1>Malha Censitária · Região Sul</h1>
       <p class="sub">65.170 setores censitários. Busque uma cidade ou endereço no topo do mapa, passe o cursor sobre um setor ou marque um ponto para analisar um raio.</p>
@@ -444,12 +500,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
 
     <div class="block">
       <p class="block-title">Estabelecimentos <span class="aux" id="poiFonte">OpenStreetMap</span></p>
-      <div class="poi-drop">
-        <select id="poiSel" aria-label="Adicionar categoria de estabelecimento">
-          <option value="">Escolha uma categoria…</option>
-        </select>
-      </div>
-      <div class="poi-chips" id="poiChips"></div>
+      <div class="poi-grade" id="poiChips" role="group" aria-label="Categorias de estabelecimento"></div>
       <p class="poi-status" id="poiStatus" role="status"></p>
     </div>
 
@@ -457,6 +508,7 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
       <a href="#" id="linkFontes" class="foot-link">Sobre as fontes e a metodologia <svg class="ico ico-sm" aria-hidden="true"><use href="#i-seta-dir"/></svg></a>
     </div>
   </aside>
+  <button class="painel-mostrar" id="btnMostrarPainel" type="button" aria-controls="panel" aria-label="Mostrar painel" title="Mostrar painel" hidden><svg class="ico" aria-hidden="true"><use href="#i-recolher"/></svg></button>
 
   <main class="map-wrap" id="mapWrap">
     <canvas id="cv" role="img" aria-label="Mapa dos setores censitários"></canvas>
@@ -494,6 +546,11 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
         </div>
         <button class="tb-sup tb-btn" id="bmap" type="button" aria-pressed="true" title="Fundo de ruas (precisa de internet)"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-camadas"/></svg><span class="tb-rot">Fundo</span></button>
       </div>
+      <div class="map-pill" id="mapPill" hidden>
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-alvo"/></svg>
+        <span id="mapPillTxt" role="status"></span>
+        <button class="pill-btn" id="mapPillCancelar" type="button" hidden>Cancelar</button>
+      </div>
       <div class="map-rodape">
         <section class="legenda-card" id="legendaCard" aria-label="Legenda do mapa">
           <div class="lg-sec" id="lgVar">
@@ -507,7 +564,6 @@ input[type=range]{flex:1;accent-color:var(--accent);height:20px;margin:0}
           <div class="lg-sec" id="poiLeg" hidden></div>
         </section>
         <div class="map-rodape-dir">
-          <div class="hint">Arraste para mover · role para aproximar</div>
           <div class="attrib" id="attrib" hidden>Esri · OpenStreetMap</div>
         </div>
       </div>
@@ -1502,6 +1558,9 @@ function svgForma(forma, cor){
 
 const poisAtivos = new Map();   // id -> [{lon,lat,x,y,nome}]
 const poiCarregando = new Set();
+// Número da última carga pedida por categoria: desligar (ou pedir de novo)
+// durante uma consulta invalida a anterior, que não volta a ligar a categoria.
+const geracaoPoi = {};
 function areaConsulta(){
   if(ponto) return {tipo:'around', r: Math.round(raioKm*1000), lat: ponto.lat, lon: ponto.lon};
   const {l,t,r,b} = INSET;   // só a área útil: o que está sob o painel não entra na consulta
@@ -1552,6 +1611,8 @@ async function consultarOverpass(q){
   }
 }
 async function carregarPoi(cat){
+  const gen = geracaoPoi[cat.id] = (geracaoPoi[cat.id]||0) + 1;
+  const vigente = () => geracaoPoi[cat.id] === gen;
   const area = areaConsulta();
   const status = document.getElementById('poiStatus');
   if(!area){
@@ -1590,11 +1651,12 @@ async function carregarPoi(cat){
       j = await consultarOverpass(q);
     }catch(e){
       ultimoErro = e;
-      if(tentativa<3){
+      if(tentativa<3 && vigente()){
         status.textContent = 'os espelhos do Overpass estão ocupados, tentando de novo…';
         await new Promise(r => setTimeout(r, 900*tentativa));
       }
     }
+    if(!vigente()) return false;   // a categoria foi desligada enquanto a consulta corria
   }
   if(!j){
     status.textContent = 'Não consegui falar com o Overpass ('+ultimoErro.message+'). '
@@ -1636,39 +1698,43 @@ function drawPois(){
   }
 }
 
-function montarPoiSelect(){
-  const sel = document.getElementById('poiSel');
-  // limpa e refaz as opções (sem repetir as já ativas)
-  sel.innerHTML = '<option value="">Escolha uma categoria…</option>';
+// Seis chips fixos que ligam e desligam cada categoria (no lugar de um select
+// que sumia com as opções já ativas). Os nós nascem uma vez; renderPois só
+// troca estado, contagem e — na troca de tema — a cor do ícone.
+const poiBotoes = new Map();   // id -> {btn, ico, qtd, cor}
+function montarPois(){
+  const grade = document.getElementById('poiChips');
+  if(!grade) return;
   for(const cat of CATS){
-    if(poisAtivos.has(cat.id) || poiCarregando.has(cat.id)) continue;
-    const o = document.createElement('option');
-    o.value = cat.id; o.textContent = cat.nome;
-    sel.appendChild(o);
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'poi-tg'; btn.setAttribute('aria-pressed','false');
+    const ico = document.createElement('span'); ico.className = 'poi-ico'; ico.setAttribute('aria-hidden','true');
+    const nome = document.createElement('span'); nome.className = 'nome'; nome.textContent = cat.nome;
+    const qtd = document.createElement('span'); qtd.className = 'qtd';
+    btn.append(ico, nome, qtd);
+    btn.onclick = () => alternarPoi(cat);
+    grade.appendChild(btn);
+    poiBotoes.set(cat.id, {btn, ico, qtd, cor:null});
   }
-  sel.onchange = () => {
-    const cat = CATS.find(c => c.id === sel.value);
-    if(cat) carregarPoi(cat);
-    sel.value = '';
-  };
+}
+function alternarPoi(cat){
+  if(poisAtivos.has(cat.id) || poiCarregando.has(cat.id)){
+    geracaoPoi[cat.id] = (geracaoPoi[cat.id]||0) + 1;   // invalida a consulta em andamento
+    poisAtivos.delete(cat.id); poiCarregando.delete(cat.id);
+    document.getElementById('poiStatus').textContent = '';
+    renderPois(); draw();
+  } else carregarPoi(cat);
 }
 function renderPois(){
-  montarPoiSelect();
-  const chips = document.getElementById('poiChips');
-  chips.innerHTML = '';
   for(const cat of CATS){
-    if(!poisAtivos.has(cat.id) && !poiCarregando.has(cat.id)) continue;
-    const chip = document.createElement('span');
-    chip.className='poi-chip';
-    const pts = poisAtivos.get(cat.id);
-    const qtd = poiCarregando.has(cat.id) ? '…' : (pts ? pts.length : '');
-    chip.innerHTML = svgForma(cat.forma, corDe(cat)) + cat.nome
-      + `<span class="qtd">${qtd}</span>`
-      + '<button class="x" type="button" title="Remover" aria-label="Remover '+cat.nome+'"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-fechar"/></svg></button>';
-    chip.querySelector('.x').onclick = () => {
-      poisAtivos.delete(cat.id); poiCarregando.delete(cat.id); renderPois(); draw();
-    };
-    chips.appendChild(chip);
+    const b = poiBotoes.get(cat.id);
+    if(!b) continue;
+    const cor = corDe(cat);
+    if(b.cor !== cor){ b.cor = cor; b.ico.innerHTML = svgForma(cat.forma, cor); }
+    const carregando = poiCarregando.has(cat.id), pts = poisAtivos.get(cat.id);
+    b.btn.setAttribute('aria-pressed', (carregando || pts) ? 'true' : 'false');
+    if(carregando) b.btn.setAttribute('aria-busy','true'); else b.btn.removeAttribute('aria-busy');
+    setTxt(b.qtd, carregando ? '…' : pts ? fmtN(pts.length) : '');
   }
   renderLegendaPois();
 }
@@ -1913,13 +1979,15 @@ function liberarMapa(){
   if(bloqueio) bloqueio.hidden = true;
   document.getElementById('app')?.classList.remove('bloqueado');
   habilitarControlesMapa(true);
+  mostrarPill('dica');
 }
 // Com o mapa bloqueado, zoom, raio e estabelecimentos não têm o que mostrar:
 // ficam desabilitados em vez de parecerem quebrados.
 function habilitarControlesMapa(on){
-  for(const id of ['zin','zout','zrst','btnPonto','poiSel']){
+  for(const id of ['zin','zout','zrst','btnPonto']){
     const el = document.getElementById(id); if(el) el.disabled = !on;
   }
+  for(const b of poiBotoes.values()) b.btn.disabled = !on;
 }
 function atualizarLimparCidade(){
   const chip = document.getElementById('chipCidade'), nome = document.getElementById('chipCidadeNome');
@@ -2139,26 +2207,64 @@ function irParaEndereco(r){
 }
 
 // ============================================================ controles do raio
+// "Marcar ponto" é um modo explícito: um aviso aparece sobre o mapa, Esc (ou
+// "Cancelar", no toque) sai dele, e arrastar continua movendo o mapa — só um
+// clique ou toque parado marca o ponto.
+const TOQUE = matchMedia('(pointer:coarse)');
+const HINT_RAIO = 'Clique em “Marcar ponto” e depois no mapa. Os números do painel passam a valer só para o raio.';
+let pillTipo = null, dicaTimer = 0;
+function mostrarPill(tipo){
+  const pill = document.getElementById('mapPill'), txt = document.getElementById('mapPillTxt');
+  const cancelar = document.getElementById('mapPillCancelar');
+  if(!pill) return;
+  clearTimeout(dicaTimer);
+  pillTipo = tipo;
+  pill.hidden = !tipo;
+  if(!tipo) return;
+  pill.dataset.tipo = tipo;
+  if(tipo === 'marcar'){
+    txt.textContent = TOQUE.matches ? 'Toque no mapa para marcar o ponto' : 'Clique no mapa para marcar o ponto · Esc cancela';
+    cancelar.hidden = !TOQUE.matches;
+  } else {
+    // dica de navegação: some na primeira interação com o mapa, ou sozinha
+    txt.textContent = TOQUE.matches ? 'Arraste com um dedo · pinça para aproximar' : 'Arraste para mover · role para aproximar';
+    cancelar.hidden = true;
+    dicaTimer = setTimeout(() => { if(pillTipo === 'dica') mostrarPill(null); }, 6000);
+  }
+}
+function dispensarDica(){ if(pillTipo === 'dica') mostrarPill(null); }
+function definirMarcacao(on){
+  aguardandoClique = on;
+  document.getElementById('btnPonto').setAttribute('aria-pressed', on ? 'true' : 'false');
+  cv.classList.toggle('marcando', on);
+  if(!ponto) document.getElementById('raioHint').textContent = on
+    ? (TOQUE.matches ? 'Agora toque no ponto do mapa.' : 'Agora clique no ponto do mapa.') : HINT_RAIO;
+  if(on){ abrirSheet(false); mostrarPill('marcar'); }
+  else if(pillTipo === 'marcar') mostrarPill(null);
+}
+function cancelarMarcacao(){
+  if(!aguardandoClique) return false;
+  definirMarcacao(false);
+  return true;
+}
+function marcarPonto(x, y){
+  const wx=(x-tx)/scale, wy=(y-ty)/scale;
+  ponto = {x:wx, y:wy, lon:wx, lat:invMerc(-wy)};
+  definirMarcacao(false);
+  recalcularRaio(); renderReadout(-1); atualizarHint(); draw();
+}
+function limparPonto(){
+  ponto = null; dentro = []; circuloProj = null;
+  definirMarcacao(false);
+  document.getElementById('raioHint').textContent = HINT_RAIO;
+  renderReadout(-1); draw();
+}
 function montarRaio(){
-  const btnPonto = document.getElementById('btnPonto');
-  const btnLimpar = document.getElementById('btnLimpar');
   const slider = document.getElementById('raio');
   const val = document.getElementById('raioVal');
-  const hint = document.getElementById('raioHint');
-
-  btnPonto.onclick = () => {
-    aguardandoClique = !aguardandoClique;
-    btnPonto.setAttribute('aria-pressed', aguardandoClique?'true':'false');
-    cv.classList.toggle('marcando', aguardandoClique);
-    hint.textContent = aguardandoClique ? 'Agora clique no ponto do mapa.'
-      : 'Clique em “Marcar ponto” e depois no mapa. Os números do painel passam a valer só para o raio.';
-  };
-  btnLimpar.onclick = () => {
-    ponto = null; dentro = []; circuloProj = null; aguardandoClique = false;
-    btnPonto.setAttribute('aria-pressed','false'); cv.classList.remove('marcando');
-    hint.textContent = 'Clique em “Marcar ponto” e depois no mapa. Os números do painel passam a valer só para o raio.';
-    renderReadout(-1); draw();
-  };
+  document.getElementById('btnPonto').onclick = () => definirMarcacao(!aguardandoClique);
+  document.getElementById('btnLimpar').onclick = limparPonto;
+  document.getElementById('mapPillCancelar').onclick = () => definirMarcacao(false);
   slider.oninput = () => {
     raioKm = parseFloat(slider.value);
     val.textContent = fmt1(raioKm)+' km';
@@ -2202,7 +2308,7 @@ function atualizarTip(f){
   }
   setTxt(tipN.base, `${fmtN(Vp(f,'hab'))} hab · ${fmtN(Vp(f,'dom'))} domicílios`);
 }
-let arraste = null, moveu = false;
+let moveu = false;
 
 function pick(mx,my){
   const wx=(mx-tx)/scale, wy=(my-ty)/scale;
@@ -2215,49 +2321,98 @@ function pick(mx,my){
   return -1;
 }
 
-cv.addEventListener('mousedown', e=>{
-  moveu = false;                       // zerar aqui, e nao so quando ha arrasto:
-  if(aguardandoClique) return;         // senao um pan anterior bloqueia o proximo clique
-  arraste = {x:e.offsetX, y:e.offsetY, tx, ty}; cv.style.cursor='grabbing';
-});
-addEventListener('mouseup', ()=>{ arraste=null; cv.style.cursor = aguardandoClique?'':'crosshair'; });
-
-cv.addEventListener('click', e=>{
-  if(!aguardandoClique || moveu) return;
-  const wx=(e.offsetX-tx)/scale, wy=(e.offsetY-ty)/scale;
-  ponto = {x:wx, y:wy, lon:wx, lat:invMerc(-wy)};
-  aguardandoClique = false;
-  document.getElementById('btnPonto').setAttribute('aria-pressed','false');
-  cv.classList.remove('marcando');
-  recalcularRaio(); renderReadout(-1); atualizarHint(); draw();
-});
-
-cv.addEventListener('mousemove', e=>{
-  if(arraste){
-    moveu = true;
-    tx = arraste.tx + (e.offsetX-arraste.x); ty = arraste.ty + (e.offsetY-arraste.y);
-    pedirDesenho(); tip.classList.remove('on'); return;
-  }
-  const f = pick(e.offsetX, e.offsetY);
+// ============================================================ ponteiro: mouse, caneta e toque
+// Pointer Events no lugar de mouse*: o mesmo código move o mapa com o mouse
+// ou com um dedo, e dá zoom com pinça. Só vira "clique" o ponteiro que não
+// andou além de um limiar — tremor de dedo não marca ponto nem seleciona
+// setor. A posição sai do retângulo em cache (sem reflow a cada evento).
+const ptrs = new Map();   // pointerId -> {x, y, x0, y0, tipo}
+let gesto = null;         // {tipo:'pan', x, y, tx, ty} | {tipo:'pinca', d0, s0, wx, wy}
+let fixado = false;       // no toque não há hover: o setor tocado fica fixado até tocar fora
+const posEvento = e => [e.clientX - wrapRect.left, e.clientY - wrapRect.top];
+function iniciarGesto(){
+  const p = [...ptrs.values()];
+  if(p.length >= 2){
+    const [a, b] = p, mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+    gesto = {tipo:'pinca', d0: Math.hypot(a.x-b.x, a.y-b.y) || 1, s0: scale, wx: (mx-tx)/scale, wy: (my-ty)/scale};
+  } else if(p.length === 1){
+    gesto = {tipo:'pan', x: p[0].x, y: p[0].y, tx, ty};
+  } else gesto = null;
+}
+function posicionarTip(x, y){
+  // limites da área útil já medidos: nada de getBoundingClientRect a cada movimento
+  const limD = W/dpr - INSET.r, limB = H/dpr - INSET.b;
+  let L = x+14, T = y+14;
+  if(L+240 > limD) L = x-240;
+  if(T+92 > limB) T = y-92;
+  tip.style.left = L+'px'; tip.style.top = Math.max(INSET.t, T)+'px';
+}
+function hoverEm(x, y){
+  const f = pick(x, y);
   // Trocar o hover não pede um draw() inteiro — só a camada de cima, que é
   // um clearRect + um stroke() em vez de reclassificar e repintar tudo.
   if(f !== hover){ hover=f; drawHover(); renderReadout(f); atualizarTip(f); }
-  if(f>=0){
-    tip.classList.add('on');
-    // limites da área útil já medidos: nada de getBoundingClientRect (reflow) a cada movimento
-    const limD = W/dpr - INSET.r, limB = H/dpr - INSET.b;
-    let L=e.offsetX+14, T=e.offsetY+14;
-    if(L+240>limD) L=e.offsetX-240;
-    if(T+92>limB) T=e.offsetY-92;
-    tip.style.left=L+'px'; tip.style.top=Math.max(INSET.t, T)+'px';
-  } else tip.classList.remove('on');
+  if(f >= 0){ tip.classList.add('on'); posicionarTip(x, y); }
+  else tip.classList.remove('on');
+  return f;
+}
+function limparFixado(){
+  if(!fixado) return false;
+  fixado = false; tip.classList.remove('on');
+  if(hover >= 0){ hover=-1; drawHover(); renderReadout(-1); }
+  return true;
+}
+
+cv.addEventListener('pointerdown', e => {
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+  if(!wrapRect) medirInset();
+  cv.setPointerCapture(e.pointerId);
+  const [x, y] = posEvento(e);
+  ptrs.set(e.pointerId, {x, y, x0:x, y0:y, tipo:e.pointerType});
+  if(ptrs.size === 1) moveu = false;
+  dispensarDica();
+  iniciarGesto();
 });
-cv.addEventListener('mouseleave', ()=>{
+cv.addEventListener('pointermove', e => {
+  const [x, y] = posEvento(e);
+  const p = ptrs.get(e.pointerId);
+  if(!p){ if(e.pointerType === 'mouse') hoverEm(x, y); return; }   // mouse passeando, sem botão
+  p.x = x; p.y = y;
+  if(!moveu && Math.hypot(x-p.x0, y-p.y0) > (p.tipo === 'mouse' ? 4 : 8)){
+    moveu = true; fixado = false; tip.classList.remove('on');
+  }
+  if(!moveu || !gesto) return;
+  if(gesto.tipo === 'pinca' && ptrs.size >= 2){
+    const [a, b] = [...ptrs.values()];
+    const d = Math.hypot(a.x-b.x, a.y-b.y), mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+    scale = gesto.s0 * d / gesto.d0;
+    tx = mx - gesto.wx*scale; ty = my - gesto.wy*scale;   // o ponto sob o meio dos dedos fica parado
+  } else if(gesto.tipo === 'pan'){
+    tx = gesto.tx + (x - gesto.x); ty = gesto.ty + (y - gesto.y);
+    cv.classList.add('arrastando');
+  }
+  pedirDesenho();
+});
+function fimPonteiro(e, cancelado){
+  const p = ptrs.get(e.pointerId);
+  if(!p) return;
+  ptrs.delete(e.pointerId);
+  if(ptrs.size){ iniciarGesto(); return; }   // saiu um dedo da pinça: segue com o que ficou, sem salto
+  gesto = null; cv.classList.remove('arrastando');
+  if(cancelado || moveu) return;
+  const [x, y] = posEvento(e);
+  if(aguardandoClique) marcarPonto(x, y);
+  else if(p.tipo !== 'mouse'){ fixado = hoverEm(x, y) >= 0; if(!fixado) limparFixado(); }
+}
+cv.addEventListener('pointerup', e => fimPonteiro(e, false));
+cv.addEventListener('pointercancel', e => fimPonteiro(e, true));
+cv.addEventListener('pointerleave', e => {
+  if(e.pointerType !== 'mouse' || ptrs.size) return;
   tip.classList.remove('on');
   if(hover>=0){ hover=-1; drawHover(); renderReadout(-1); }
 });
 cv.addEventListener('wheel', e=>{
-  e.preventDefault();
+  e.preventDefault(); dispensarDica();
   const k = Math.exp(-e.deltaY*0.0015);
   tx = e.offsetX-(e.offsetX-tx)*k; ty = e.offsetY-(e.offsetY-ty)*k; scale *= k;
   pedirDesenho();
@@ -2353,26 +2508,96 @@ function montarFontes(){
   if(voltar) voltar.onclick = (e) => { e.preventDefault(); fecharFontes(); };
 }
 
-// ============================================================ Esc
-// Uma tecla, um passo: fecha primeiro o que está mais "por cima" — página de
-// fontes, menu de variáveis, modo de marcar ponto. A busca trata o próprio
-// Esc e marca o evento, então o coordenador não age duas vezes.
-function cancelarMarcacao(){
-  if(!aguardandoClique) return false;
-  document.getElementById('btnPonto').click();   // o mesmo caminho do botão
+// ============================================================ painel: recolher (desktop) e bottom sheet (celular)
+const mqSheet = matchMedia('(max-width: 880px)');
+const painel = document.getElementById('panel');
+const PEEK = 172;   // mesma altura do --peek-h do CSS (sem a safe area)
+function abrirSheet(v){
+  if(!mqSheet.matches || !painel) return false;
+  if(painel.classList.contains('aberto') === v) return false;
+  painel.classList.toggle('aberto', v);
+  const alca = document.getElementById('sheetAlca');
+  if(alca){
+    alca.setAttribute('aria-expanded', v ? 'true' : 'false');
+    alca.firstElementChild.textContent = v ? 'Recolher painel' : 'Expandir painel';
+  }
+  if(!v) painel.scrollTop = 0;
   return true;
 }
+function montarSheet(){
+  const alca = document.getElementById('sheetAlca');
+  if(!alca || !painel) return;
+  let arr = null;
+  alca.addEventListener('pointerdown', e => {
+    if(!mqSheet.matches) return;
+    alca.setPointerCapture(e.pointerId);
+    arr = {y0: e.clientY, t0: performance.now(), aberto: painel.classList.contains('aberto'),
+           curso: Math.max(0, painel.offsetHeight - PEEK), dy: 0};
+    painel.classList.add('arrastando');
+  });
+  alca.addEventListener('pointermove', e => {
+    if(!arr) return;
+    arr.dy = e.clientY - arr.y0;
+    const y = Math.min(arr.curso, Math.max(0, (arr.aberto ? 0 : arr.curso) + arr.dy));
+    painel.style.transform = `translateY(${y}px)`;   // acompanha o dedo, sem transição
+  });
+  const soltar = () => {
+    if(!arr) return;
+    const {dy, t0, aberto, curso} = arr;
+    arr = null;
+    painel.classList.remove('arrastando'); painel.style.transform = '';
+    const vel = dy / Math.max(1, performance.now() - t0);
+    let abrir;
+    if(Math.abs(dy) < 6) abrir = !aberto;                   // toque: alterna
+    else if(Math.abs(vel) > 0.5) abrir = vel < 0;           // arremesso: vale a direção
+    else abrir = (aberto ? 0 : curso) + dy < curso/2;       // senão, a metade do caminho
+    abrirSheet(abrir);
+  };
+  alca.addEventListener('pointerup', soltar);
+  alca.addEventListener('pointercancel', soltar);
+  alca.addEventListener('keydown', e => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrirSheet(!painel.classList.contains('aberto')); }
+  });
+  // Tab para dentro do painel recolhido: abre, para o foco não sumir fora da tela
+  painel.addEventListener('focusin', e => { if(e.target !== alca) abrirSheet(true); });
+  mqSheet.addEventListener('change', () => { painel.classList.remove('aberto'); painel.style.transform = ''; });
+}
+function montarRecolherPainel(){
+  const app = document.getElementById('app');
+  const recolher = document.getElementById('btnRecolher'), mostrar = document.getElementById('btnMostrarPainel');
+  if(!recolher || !mostrar || !painel) return;
+  const aplicar = rec => {
+    const antes = INSET.l;
+    app.classList.toggle('painel-recolhido', rec);
+    painel.inert = rec;
+    mostrar.hidden = !rec;
+    recolher.setAttribute('aria-expanded', rec ? 'false' : 'true');
+    medirInset();
+    // a área útil cresce (ou encolhe) pela esquerda: meio deslocamento mantém o centro
+    tx += (INSET.l - antes)/2;
+    draw();
+    (rec ? mostrar : recolher).focus();
+  };
+  recolher.onclick = () => aplicar(true);
+  mostrar.onclick = () => aplicar(false);
+}
+
+// ============================================================ Esc
+// Uma tecla, um passo: fecha primeiro o que está mais "por cima" — página de
+// fontes, menu de variáveis, modo de marcar ponto, setor fixado pelo toque,
+// bottom sheet aberto. A busca trata o próprio Esc e marca o evento, então o
+// coordenador não age duas vezes.
 document.addEventListener('keydown', e => {
   if(e.key !== 'Escape' || e.defaultPrevented) return;
-  if(fecharFontes() || fecharVarMenu(true) || cancelarMarcacao()) e.preventDefault();
+  if(fecharFontes() || fecharVarMenu(true) || cancelarMarcacao() || limparFixado() || abrirSheet(false)) e.preventDefault();
 });
 
 // ============================================================ início
 classify();
 AGG_TOTAL = agregar(null);
 atualizarCSSV();
-montarVars(); pintarSwatches(); renderLegend(); montarBusca(); montarRaio(); renderPois(); montarEpoca();
-montarVarToggle(); montarFontes();
+montarVars(); pintarSwatches(); renderLegend(); montarPois(); montarBusca(); montarRaio(); renderPois(); montarEpoca();
+montarVarToggle(); montarFontes(); montarSheet(); montarRecolherPainel();
 renderReadout(-1);
 resize();
 montarTema();
