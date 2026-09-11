@@ -45,7 +45,7 @@
   --danger:#B03A26; --seg-thumb:#FFFFFF;
   --map-bg:#E4E7EA; --map-stroke:#EEF0F2; --map-null:#C9CED4;
   --map-label:#1B2228; --map-halo:rgba(255,255,255,.92);
-  --raio:#B03A26; --raio-fill:rgba(176,58,38,.10);
+  --raio:#1B5D58; --raio-fill:rgba(27,93,88,.08);
   --ct-mun:rgba(20,30,40,.75); --ct-bairro:rgba(70,80,90,.4);
   --focus:#1B5D58;
   --scrim:rgba(238,240,242,.9);
@@ -64,7 +64,7 @@
   --danger:#E5876F; --seg-thumb:#343C44;
   --map-bg:#131719; --map-stroke:#0E1114; --map-null:#2C3339;
   --map-label:#EDF1F4; --map-halo:rgba(10,13,15,.9);
-  --raio:#E5876F; --raio-fill:rgba(229,135,111,.12);
+  --raio:#5FBDB2; --raio-fill:rgba(95,189,178,.10);
   --ct-mun:rgba(230,235,240,.75); --ct-bairro:rgba(160,170,180,.4);
   --focus:#5FBDB2;
   --scrim:rgba(19,23,25,.9);
@@ -660,14 +660,19 @@ function pathDe(f){
 
 // ============================================================ variáveis
 const RAMPS = {
-  teal:   {l:['#D9E9E6','#A7CFC9','#6FAEA6','#3D857D','#1B5049'], d:['#26504C','#2F6A61','#377C71','#55A79A','#8FCEC4']},
-  indigo: {l:['#DEE1F0','#B5BCDE','#8890C6','#5C63A4','#353A6E'], d:['#2A3157','#3B4380','#454C8C','#6971B5','#9AA1D8']},
-  ocre:   {l:['#F0E5D2','#DCC69B','#C2A165','#9E7A38','#6E5119'], d:['#4A3A1C','#6B5326','#7A5F2C','#A88544','#D2B173']},
-  brick:  {l:['#F1E0DA','#DEB8AC','#C48C7B','#A26150','#733A2C'], d:['#4E2D23','#6E3C2E','#824737','#AE6752','#D89C86']},
-  plum:   {l:['#E9E0EE','#CDB8D8','#AC8FC0','#8768A0','#5D4271'], d:['#3B2C4C','#54396C','#61457A','#84639F','#AE92C6']},
-  // Vermelho (renda baixa) → amarelo (intermediária) → verde (renda alta):
-  // mais contraste entre as pontas da escala do que um degradê de uma cor só.
-  renda:  {l:['#C0392B','#DC8A3C','#E8C547','#8FB93E','#1F7A4D'], d:['#6B2F27','#8A5A32','#8C7A3A','#5C8A45','#3E9A5C']}
+  // Sequenciais: uma matiz, luminosidade em degraus iguais (OKLCH). Validadas
+  // já compostas com a transparência real do mapa (0,55 com ruas, 0,86 sem):
+  // cada degrau fica a ≥ 0,06 de luminosidade do vizinho, nos dois temas.
+  teal:   {l:['#DAECE9','#9BC7C1','#5CA29A','#277C73','#13524C'], d:['#10413A','#21665C','#3F8D81','#59B6A7','#95DBCE']},
+  indigo: {l:['#DEE1F0','#B5BCDE','#8890C6','#5C63A4','#353A6E'], d:['#2E335E','#4A5197','#6C76C1','#909CEB','#BDC7FD']},
+  ocre:   {l:['#F2E6D1','#D3B98B','#B18E4A','#8A6510','#5D4202'], d:['#463513','#6F5521','#97783F','#C49C53','#EBC47F']},
+  brick:  {l:['#F6E3DD','#DCB2A6','#BF8270','#9C5742','#703321'], d:['#512D22','#804838','#AD6855','#DD8A73','#FDB7A3']},
+  plum:   {l:['#EDE4F4','#C9B3D7','#A585BA','#7F5B97','#57386B'], d:['#412E51','#684983','#8D6DAB','#B591D7','#DABCF8']},
+  // Renda (classes E→A): divergente laranja → neutro → azul. O vermelho→verde
+  // anterior sumia para quem tem deuteranopia e o amarelo do meio desaparecia
+  // no fundo; aqui os dois braços têm luminosidade monotônica e os polos
+  // continuam opostos (quente × frio) para qualquer visão. No escuro, acendem.
+  renda:  {l:['#993F00','#CC7B4B','#DAD7D3','#6295D4','#2E5E9A'], d:['#FCA676','#B26232','#3A3835','#4B7CBA','#92C1FD']}
 };
 // Instância única do formatador: criar um Intl.NumberFormat por chamada é
 // caro e essas funções rodam centenas de vezes por interação (legenda,
@@ -716,8 +721,27 @@ const CSSV_CHAVES = ['--map-null','--map-bg','--ink','--raio-fill','--raio','--s
 function atualizarCSSV(){
   const cs = getComputedStyle(document.documentElement);
   for(const n of CSSV_CHAVES) CSSV[n] = cs.getPropertyValue(n).trim();
+  criarPadraoNulo();
 }
 const cssv = n => CSSV[n];
+// "Sem dado" em hachura, não em cinza chapado: o cinza se confundia com o
+// neutro da classe C da renda. O ladrilho é desenhado em pixels de tela
+// (6 px CSS × dpr) e, no draw(), a matriz do padrão desfaz só a escala — a
+// hachura acompanha o arrasto e mantém a mesma densidade em qualquer zoom.
+let padraoNulo = null;
+function criarPadraoNulo(){
+  const lado = Math.max(2, Math.round(6*dpr));
+  const off = document.createElement('canvas'); off.width = off.height = lado;
+  const o = off.getContext('2d'), cor = cssv('--map-null');
+  o.globalAlpha = 0.35; o.fillStyle = cor; o.fillRect(0,0,lado,lado);
+  o.globalAlpha = 1; o.strokeStyle = cor; o.lineWidth = Math.max(1, dpr);
+  o.beginPath();   // a diagonal e as duas sobras dos cantos, para emendar sem falha
+  o.moveTo(0,lado); o.lineTo(lado,0);
+  o.moveTo(-lado/2,lado/2); o.lineTo(lado/2,-lado/2);
+  o.moveTo(lado/2,lado*1.5); o.lineTo(lado*1.5,lado/2);
+  o.stroke();
+  padraoNulo = ctx.createPattern(off, 'repeat');
+}
 let nClasses = 5;
 const ramp = () => {
   const full = RAMPS[cur.ramp][isDark()?'d':'l'];
@@ -794,6 +818,7 @@ function resize(){
   cv.width=W; cv.height=H;
   cvH.width=W; cvH.height=H;
   if(!scale || scale===1) fit();
+  criarPadraoNulo();   // o ladrilho é em pixels de tela: acompanha o dpr
   draw();
 }
 
@@ -1056,12 +1081,14 @@ function draw(){
   // baixo; sem o fundo, cede um pouco menos. Um meio-termo entre "quase
   // opaco" (versão original) e "bem apagado" (a transparência de antes,
   // que deixava a rua legível mas a cor pouco útil pra leitura de dado).
-  const alphaBase = basemapOn ? 0.40 : 0.86;
+  // As paletas foram validadas exatamente nessas duas transparências.
+  const alphaBase = basemapOn ? 0.55 : 0.86;
 
   // "Sem variável" pula o agrupamento por classe inteiro: nenhum fillStyle,
   // nenhum contorno de setor — só o fundo, o contorno do município e os
   // rótulos. É o que deixa o mapa "mais limpo" quando pedido.
   if(cur){
+    if(padraoNulo) padraoNulo.setTransform(new DOMMatrix([1/(scale*dpr),0,0,1/(scale*dpr),0,0]));
     const lotes = [];
     for(let c=-1;c<nClasses;c++) lotes.push([]);
     for(const f of visiveis) lotes[cls[f]+1].push(f);
@@ -1069,7 +1096,7 @@ function draw(){
     for(let c=-1;c<nClasses;c++){
       const lote = lotes[c+1];
       if(!lote.length) continue;
-      ctx.fillStyle = c<0 ? nullc : R[c];
+      ctx.fillStyle = c<0 ? (padraoNulo || nullc) : R[c];
       // Dentro e fora do raio são duas opacidades, então duas passadas.
       for(const modo of (ponto ? [true,false] : [false])){
         const alvo = ponto ? lote.filter(f => foraDoRaio.has(f) === modo) : lote;
@@ -1097,6 +1124,8 @@ function draw(){
     for(let i=2;i<circuloProj.length;i+=2) ctx.lineTo(circuloProj[i], circuloProj[i+1]);
     ctx.closePath();
     ctx.fillStyle = cssv('--raio-fill'); ctx.fill();
+    // halo da superfície por baixo do anel: separa o traço de qualquer cor de classe
+    ctx.lineWidth = 5/scale; ctx.strokeStyle = cssv('--map-halo'); ctx.stroke();
     ctx.lineWidth = 2.2/scale; ctx.strokeStyle = cssv('--raio'); ctx.stroke();
   }
 
@@ -1175,9 +1204,9 @@ function drawHover(){
 
 function drawPonto(){
   const px = ponto.x*scale+tx, py = ponto.y*scale+ty;
-  ctx.beginPath(); ctx.arc(px,py,5,0,7);
+  ctx.beginPath(); ctx.arc(px,py,5.5,0,7);
   ctx.fillStyle = cssv('--raio'); ctx.fill();
-  ctx.lineWidth = 2; ctx.strokeStyle = cssv('--surface'); ctx.stroke();
+  ctx.lineWidth = 2.5; ctx.strokeStyle = cssv('--surface'); ctx.stroke();
 }
 
 // Largura de texto não muda entre quadros (a fonte é fixa), então medir de
@@ -1219,18 +1248,18 @@ function drawLabels(){
 // Overpass devolve o OpenStreetMap consultado ao vivo. Não há chave nem
 // cadastro; em compensação o servidor é comunitário e às vezes recusa por
 // excesso de uso — daí o aviso explícito em vez de um mapa mudo.
-// Uma cor própria por categoria (6 tons bem separados, base Okabe-Ito) mais
-// um ícone com silhueta reconhecível — antes eram 3 famílias de cor com 6
-// formas geométricas parecidas (losango/triângulo/triângulo invertido), o
-// que ficava difícil de diferenciar de relance. Cor e forma agora carregam
-// a mesma informação de dois jeitos (redundância ajuda daltonismo também).
+// Uma cor própria por categoria, tirada da paleta categórica documentada, mais
+// um ícone com silhueta reconhecível. Seis cores num mapa não passam no piso
+// de distinção "todos os pares" com paleta nenhuma (dois pontos quaisquer
+// podem ficar lado a lado), então o ícone não é enfeite: é a segunda
+// codificação obrigatória — cor e forma dizem a mesma coisa de dois jeitos.
 const COR = {
-  saude:       {l:'#C22B4A', d:'#E5637F'},   // vermelho
-  farmacia:    {l:'#0C8F65', d:'#3DBF95'},   // verde
-  escola:      {l:'#1C6FD6', d:'#5B9BE8'},   // azul
-  mercado:     {l:'#D6720A', d:'#F0973B'},   // laranja
-  comercio:    {l:'#7C4FBF', d:'#A583DE'},   // roxo
-  alimentacao: {l:'#0E7C86', d:'#3FADB8'}    // teal
+  saude:       {l:'#e34948', d:'#e66767'},   // vermelho
+  farmacia:    {l:'#1baf7a', d:'#199e70'},   // verde-água
+  escola:      {l:'#2a78d6', d:'#3987e5'},   // azul
+  mercado:     {l:'#eda100', d:'#c98500'},   // amarelo
+  comercio:    {l:'#4a3aa7', d:'#9085e9'},   // violeta
+  alimentacao: {l:'#e87ba4', d:'#d55181'}    // magenta
 };
 const CATS = [
   {id:'saude',      nome:'Saúde',        cor:'saude',       forma:'cruz_medica',
@@ -1420,13 +1449,18 @@ function drawPois(){
   for(const cat of CATS){
     const pts = poisAtivos.get(cat.id);
     if(!pts) continue;
-    ctx.fillStyle = corDe(cat);
-    ctx.strokeStyle = cssv('--map-halo'); ctx.lineWidth = 1.5;
+    const cor = corDe(cat), halo = cssv('--map-halo');
+    ctx.fillStyle = cor; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     for(const p of pts){
       const px=p.x*scale+tx, py=p.y*scale+ty;
       if(px<-10||py<-10||px>cw+10||py>ch+10) continue;
       desenharForma(cat.forma, px, py, 4.2);
-      ctx.fill(); ctx.stroke();
+      // anel de 2px da superfície por baixo (traço de 4px, metade coberta pelo
+      // preenchimento), depois a forma — e um traço na cor para as formas feitas
+      // só de linhas (talheres, livro), que o preenchimento sozinho não mostra.
+      ctx.lineWidth = 4; ctx.strokeStyle = halo; ctx.stroke();
+      ctx.fill();
+      ctx.lineWidth = 1.4; ctx.strokeStyle = cor; ctx.stroke();
     }
   }
 }
@@ -1554,7 +1588,7 @@ function renderReadout(f){
   ];
   statNodes.forEach((el,i)=>{ if(i===4) el.innerHTML = valores[i]; else el.textContent = valores[i]; });
 
-  const R = RAMPS.teal[isDark()?'d':'l'];
+  const R = RAMPS.renda[isDark()?'d':'l'];
   const vals = FAIXAS.map(([k]) => s[k]);
   const tot = vals.reduce((a,b)=>a+(b||0),0) || 1;
   let acumulado = 0;
